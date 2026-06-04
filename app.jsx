@@ -820,6 +820,26 @@ function App() {
           React.createElement('p', null, imageAnalysis.description)
         ),
 
+        searchDone && results.length > 0 && results[0].enhancedQuery && results[0].enhancedQuery !== query &&
+          React.createElement('div', { className:'ai-banner fade-in', style:{marginBottom:16, background:'rgba(52,152,219,0.08)', borderColor:'rgba(52,152,219,0.2)'} },
+            React.createElement('div', { className:'ai-banner-head' },
+              React.createElement('div', { className:'ai-banner-title', style:{color:'var(--info)'} }, '🔬 Recherche optimisée par IA')
+            ),
+            React.createElement('p', null,
+              React.createElement('span', { style:{color:'var(--text3)'} }, 'Requête enrichie : '),
+              React.createElement('span', { style:{color:'var(--text)',fontStyle:'italic'} }, `"${results[0].enhancedQuery}"`)
+            ),
+            results[0].visualCriteria && results[0].visualCriteria.length > 0 &&
+              React.createElement('div', { style:{display:'flex',flexWrap:'wrap',gap:4,marginTop:8} },
+                results[0].visualCriteria.map((c,i) => React.createElement('span', {
+                  key:i, style:{
+                    background:'rgba(52,152,219,0.12)',border:'1px solid rgba(52,152,219,0.25)',
+                    color:'#3498db',fontSize:'0.72rem',padding:'2px 8px',borderRadius:'99px'
+                  }
+                }, `✓ ${c}`))
+              )
+          ),
+
         showMap && React.createElement('div', { style:{marginBottom:16} },
           React.createElement('div', { className:'section-title' }, '🗺 Disponibilité mondiale'),
           React.createElement(MapPreview, null)
