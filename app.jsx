@@ -98,7 +98,35 @@ function useAuth() {
     setSession(null); setUser(null);
   }
 
-  return { user, session, loading, login, signup, logout, isLoggedIn: !!session?.access_token };
+  async function loginWithProvider(provider) {
+    const SUPABASE_URL = window._SUPABASE_URL || '';
+    // Redirige vers Supabase OAuth
+    const redirectUrl = encodeURIComponent(window.location.origin + '/auth/callback');
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectUrl}`;
+  }
+
+  // Gère le retour OAuth (token dans l'URL hash)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const sessionData = {
+        access_token: params.get('access_token'),
+        refresh_token: params.get('refresh_token'),
+        expires_in: params.get('expires_in'),
+      };
+      localStorage.setItem('findit_session', JSON.stringify(sessionData));
+      setSession(sessionData);
+      // Nettoie l'URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Charge le profil
+      authCall('get_profile').then(data => {
+        if (data.success) setUser(data.user);
+      });
+    }
+  }, []);
+
+  return { user, session, loading, login, signup, logout, loginWithProvider, isLoggedIn: !!session?.access_token };
 }
 
 
@@ -758,6 +786,48 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
           )
         ),
         React.createElement('div', { className:'modal-body' },
+          // Boutons OAuth
+          React.createElement('div', { style:{display:'flex',flexDirection:'column',gap:8,marginBottom:16} },
+            React.createElement('button', {
+              onClick:()=>auth.loginWithProvider('google'),
+              style:{
+                display:'flex',alignItems:'center',justifyContent:'center',gap:10,
+                width:'100%',padding:'10px',borderRadius:'var(--radius)',
+                background:'white',border:'1px solid #ddd',color:'#333',
+                fontFamily:'var(--font-body)',fontWeight:500,fontSize:'0.88rem',cursor:'pointer'
+              }
+            },
+              React.createElement('svg', { viewBox:'0 0 24 24', width:18, height:18 },
+                React.createElement('path', { fill:'#4285F4', d:'M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z' }),
+                React.createElement('path', { fill:'#34A853', d:'M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z' }),
+                React.createElement('path', { fill:'#FBBC05', d:'M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z' }),
+                React.createElement('path', { fill:'#EA4335', d:'M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z' })
+              ),
+              'Continuer avec Google'
+            ),
+            React.createElement('button', {
+              onClick:()=>auth.loginWithProvider('apple'),
+              style:{
+                display:'flex',alignItems:'center',justifyContent:'center',gap:10,
+                width:'100%',padding:'10px',borderRadius:'var(--radius)',
+                background:'#000',border:'1px solid #333',color:'white',
+                fontFamily:'var(--font-body)',fontWeight:500,fontSize:'0.88rem',cursor:'pointer'
+              }
+            },
+              React.createElement('svg', { viewBox:'0 0 24 24', width:18, height:18, fill:'white' },
+                React.createElement('path', { d:'M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z' })
+              ),
+              'Continuer avec Apple'
+            )
+          ),
+
+          // Séparateur
+          React.createElement('div', { style:{display:'flex',alignItems:'center',gap:10,marginBottom:16} },
+            React.createElement('div', { style:{flex:1,height:1,background:'var(--border)'} }),
+            React.createElement('span', { style:{fontSize:'0.75rem',color:'var(--text3)'} }, 'ou par email'),
+            React.createElement('div', { style:{flex:1,height:1,background:'var(--border)'} })
+          ),
+
           // Toggle login/signup
           React.createElement('div', { style:{display:'flex',gap:0,marginBottom:20,background:'var(--dark3)',borderRadius:'var(--radius)',padding:3} },
             ['login','signup'].map(m => React.createElement('button', {
@@ -935,10 +1005,178 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
   );
 }
 
+// ─── PRICE COMPARE MODAL ────────────────────────────────────────────────────
+function PriceCompareModal({ query, onClose }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch(`/.netlify/functions/compare?q=${encodeURIComponent(query)}&country=be`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, [query]);
+
+  return React.createElement('div', { className:'modal-overlay', onClick:onClose },
+    React.createElement('div', { className:'modal', style:{maxWidth:620}, onClick:e=>e.stopPropagation() },
+      React.createElement('div', { className:'modal-header' },
+        React.createElement('div', { className:'modal-title' }, '💰 Comparateur de prix'),
+        React.createElement('button', { className:'modal-close', onClick:onClose },
+          React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
+        )
+      ),
+      React.createElement('div', { style:{padding:16, maxHeight:'70vh', overflowY:'auto'} },
+        loading && React.createElement('div', { className:'loading' },
+          React.createElement('div', { className:'spinner' }),
+          React.createElement('p', null, '🔍 Comparaison des prix en cours…')
+        ),
+        error && React.createElement('div', { style:{color:'var(--primary)',padding:16} }, error),
+        data && React.createElement('div', null,
+          // Stats banner
+          React.createElement('div', { style:{
+            display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:16
+          }},
+            [
+              ['Prix min', `${data.stats.minPrice} €`, 'var(--success)'],
+              ['Prix max', `${data.stats.maxPrice} €`, 'var(--primary)'],
+              ['Moyenne', `${data.stats.avgPrice} €`, 'var(--info)'],
+              ['Économie max', `${data.stats.savings} € (-${data.stats.savingsPct}%)`, 'var(--warning)'],
+            ].map(([label, val, color]) =>
+              React.createElement('div', { key:label, style:{
+                background:'var(--dark3)', border:'1px solid var(--border)',
+                borderRadius:'var(--radius)', padding:'10px 12px', textAlign:'center'
+              }},
+                React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--text3)',marginBottom:4} }, label),
+                React.createElement('div', { style:{fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.88rem',color} }, val)
+              )
+            )
+          ),
+
+          // Recommandation IA
+          data.analysis && React.createElement('div', { className:'ai-banner', style:{marginBottom:16} },
+            React.createElement('div', { className:'ai-banner-head' },
+              React.createElement('div', { className:'ai-banner-title' }, '🤖 Conseil d'achat IA')
+            ),
+            React.createElement('p', null, data.analysis.recommendation),
+            data.analysis.tip && React.createElement('p', { style:{marginTop:6,fontSize:'0.8rem',color:'var(--text3)'} },
+              `💡 ${data.analysis.tip}`
+            )
+          ),
+
+          // Liste des offres
+          React.createElement('div', { style:{display:'flex',flexDirection:'column',gap:8} },
+            data.results.map((r,i) => React.createElement('div', { key:i, style:{
+              display:'flex', alignItems:'center', gap:12,
+              background: i===0 ? 'rgba(46,204,113,0.08)' : 'var(--dark3)',
+              border: `1px solid ${i===0 ? 'rgba(46,204,113,0.3)' : 'var(--border)'}`,
+              borderRadius:'var(--radius)', padding:'10px 12px'
+            }},
+              // Rank
+              React.createElement('div', { style:{
+                width:28, height:28, borderRadius:'99px', flexShrink:0,
+                background: i===0 ? 'var(--success)' : i===1 ? 'var(--warning)' : 'var(--dark2)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontWeight:700, fontSize:'0.78rem', color:'white'
+              }}, i===0 ? '🏆' : `${i+1}`),
+
+              // Image
+              r.img && React.createElement('img', {
+                src:r.img, alt:r.store,
+                style:{width:40,height:40,objectFit:'cover',borderRadius:6,flexShrink:0}
+              }),
+
+              // Infos
+              React.createElement('div', { style:{flex:1,minWidth:0} },
+                React.createElement('div', { style:{
+                  fontSize:'0.82rem',fontWeight:600,color:'var(--text)',
+                  whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'
+                }}, r.title),
+                React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)',marginTop:2} },
+                  `🏪 ${r.store}`,
+                  r.delivery && ` · ⚡ ${r.delivery}`
+                )
+              ),
+
+              // Prix + lien
+              React.createElement('div', { style:{textAlign:'right',flexShrink:0} },
+                React.createElement('div', { style:{
+                  fontFamily:'var(--font-head)',fontWeight:700,
+                  fontSize: i===0 ? '1.1rem' : '0.95rem',
+                  color: i===0 ? 'var(--success)' : 'var(--text)'
+                }}, r.price || '—'),
+                r.storeLink && React.createElement('a', {
+                  href:r.storeLink, target:'_blank', rel:'noopener noreferrer',
+                  style:{
+                    display:'block',marginTop:4,fontSize:'0.72rem',
+                    background:'var(--primary)',color:'white',padding:'3px 8px',
+                    borderRadius:6,textDecoration:'none',textAlign:'center'
+                  }
+                }, "Voir →")
+              )
+            ))
+          )
+        )
+      )
+    )
+  );
+}
+
+// ─── PWA INSTALL BANNER ───────────────────────────────────────────────────────
+function PWAInstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Affiche la bannière après 30s si pas encore installé
+      setTimeout(() => setShow(true), 30000);
+    });
+  }, []);
+
+  if (!show || !deferredPrompt) return null;
+
+  return React.createElement('div', {
+    style:{
+      position:'fixed', bottom:24, left:'50%', transform:'translateX(-50%)',
+      background:'var(--dark2)', border:'1px solid var(--border2)',
+      borderRadius:'var(--radius-lg)', padding:'12px 20px',
+      display:'flex', alignItems:'center', gap:12, zIndex:400,
+      boxShadow:'0 8px 32px rgba(0,0,0,0.4)', maxWidth:380, width:'calc(100% - 32px)'
+    }
+  },
+    React.createElement('span', { style:{fontSize:'1.5rem'} }, '📲'),
+    React.createElement('div', { style:{flex:1} },
+      React.createElement('div', { style:{fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.88rem'} },
+        'Installer Find It'
+      ),
+      React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)'} },
+        'Accès rapide depuis votre écran d'accueil'
+      )
+    ),
+    React.createElement('button', {
+      onClick:()=>{ deferredPrompt.prompt(); setShow(false); },
+      style:{
+        background:'var(--primary)',color:'white',border:'none',
+        fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.82rem',
+        padding:'7px 14px',borderRadius:'var(--radius)',cursor:'pointer'
+      }
+    }, 'Installer'),
+    React.createElement('button', {
+      onClick:()=>setShow(false),
+      style:{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:4}
+    }, '✕')
+  );
+}
+
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 function App() {
   const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showCompare, setShowCompare] = useState(false);
+  const [compareQuery, setCompareQuery] = useState('');
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [view, setView] = useState('list');
@@ -1248,6 +1486,11 @@ function App() {
       )
     ),
 
+    showCompare && React.createElement(PriceCompareModal, {
+      query: compareQuery,
+      onClose:()=>setShowCompare(false)
+    }),
+    React.createElement(PWAInstallBanner, null),
     showUpload && React.createElement(UploadModal, {
       onClose:()=>setShowUpload(false),
       onSearchWithAnalysis:handleImageSearch

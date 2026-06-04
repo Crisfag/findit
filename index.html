@@ -4,15 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Find It — Trouvez tout, partout</title>
+  <meta name="description" content="Trouvez n'importe quel article dans le monde entier — par texte ou par photo">
+  <meta name="theme-color" content="#FF4B2B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Find It">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23FF4B2B'/><text y='130' x='90' text-anchor='middle' font-size='110' font-family='Arial'>🛍</text></svg>">
+  <!-- Open Graph pour le partage -->
+  <meta property="og:title" content="Find It — Recherche mondiale">
+  <meta property="og:description" content="Trouvez n'importe quel article dans le monde entier">
+  <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="root"></div>
+  <script>
+    // Injecte la config Supabase côté client (URL publique, pas de secret)
+    window._SUPABASE_URL = 'https://tmsenhcuinrrmifbgqvm.supabase.co';
+  </script>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="text/babel" src="app.jsx"></script>
+  <script>
+    // Enregistrement Service Worker PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW enregistré:', reg.scope))
+          .catch(err => console.log('SW erreur:', err));
+      });
+    }
+  </script>
 </body>
 </html>

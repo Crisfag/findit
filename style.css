@@ -313,3 +313,51 @@ input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; 
 /* ─── SECTION ─── */
 .section-title { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 .section-title .count { font-size: 0.75rem; background: var(--dark3); border: 1px solid var(--border); color: var(--text3); padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+
+/* ─── PWA & MOBILE OPTIMISATIONS ─── */
+@media (max-width: 600px) {
+  :root { --header-h: 56px; }
+  header { padding: 0 12px; gap: 8px; }
+  .logo-text { display: none; }
+  .header-search { max-width: none; }
+  .header-search input { font-size: 0.85rem; padding: 8px 12px 8px 36px; }
+  .main-content { padding: 12px; margin-left: 0 !important; }
+  .sidebar { display: none; }
+  .sidebar-toggle { display: none; }
+  .hero h1 { font-size: 1.6rem; }
+  .hero p { font-size: 0.88rem; }
+  .search-box { padding: 10px; flex-direction: column; gap: 8px; }
+  .search-divider { display: none; }
+  .btn-camera { width: 100%; justify-content: center; }
+  .btn-search { width: 100%; }
+  .categories { gap: 6px; }
+  .cat-chip { font-size: 0.75rem; padding: 5px 10px; }
+  .result-item { flex-direction: column; }
+  .result-img { width: 100% !important; height: 180px !important; border-radius: var(--radius) var(--radius) 0 0; }
+  .result-actions { flex-direction: row; width: 100%; justify-content: space-between; }
+  .result-grid { grid-template-columns: repeat(2, 1fr); }
+  .results-header { flex-direction: column; align-items: flex-start; }
+  .modal { margin: 12px; max-width: calc(100vw - 24px) !important; }
+  .modal-body { padding: 16px; }
+}
+
+/* ─── SAFE AREA (notch iPhone) ─── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  header { padding-top: env(safe-area-inset-top); }
+  .toast-wrap { bottom: calc(24px + env(safe-area-inset-bottom)); }
+}
+
+/* ─── ANIMATIONS AMÉLIORÉES ─── */
+.result-item, .result-card { transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
+.result-item:hover, .result-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.btn-visit:hover { transform: scale(1.02); }
+.modal { animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ─── COMPARATEUR ─── */
+.price-rank-1 { background: rgba(46,204,113,0.08) !important; border-color: rgba(46,204,113,0.3) !important; }
+
+/* ─── SCROLLBAR MOBILE ─── */
+@media (max-width: 600px) {
+  ::-webkit-scrollbar { width: 0; }
+}
