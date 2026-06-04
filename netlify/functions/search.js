@@ -248,7 +248,7 @@ Réponds UNIQUEMENT en JSON :
         stars: item.rating || null,
         reviews: item.reviews || null,
         store: item.source || 'Boutique en ligne',
-        storeLink: item.link && item.link.startsWith('http') ? item.link : null,
+        storeLink: item.link ? (item.link.startsWith('http') ? item.link : ('https://google.com/search?q=' + encodeURIComponent(item.title || ''))) : null,
         delivery: item.delivery || 'Délai non précisé',
         img: item.thumbnail || null,
         badge: item.badge || null,
