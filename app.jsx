@@ -206,27 +206,119 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
 }
 
 // ─── MAP PREVIEW ─────────────────────────────────────────────────────────────
-function MapPreview() {
-  const pins = [
-    { top:'30%', left:'22%', label:'Bruxelles', match:97 },
-    { top:'55%', left:'45%', label:'Paris', match:92 },
-    { top:'20%', left:'62%', label:'Amsterdam', match:88 },
-    { top:'65%', left:'72%', label:'Munich', match:85 },
-    { top:'40%', left:'80%', label:'Milan', match:79 },
-    { top:'15%', left:'35%', label:'Londres', match:75 },
+// Coordonnées normalisées (0-100%) pour la carte stylisée
+const STORE_POSITIONS = {
+  'amazon':     { top:'28%', left:'48%', country:'Global' },
+  'zalando':    { top:'25%', left:'52%', country:'Berlin' },
+  'asos':       { top:'20%', left:'42%', country:'Londres' },
+  'fnac':       { top:'32%', left:'46%', country:'Paris' },
+  'cdiscount':  { top:'33%', left:'45%', country:'Paris' },
+  'ikea':       { top:'26%', left:'51%', country:'Stockholm' },
+  'décathlon':  { top:'30%', left:'44%', country:'Bruxelles' },
+  'decathlon':  { top:'30%', left:'44%', country:'Bruxelles' },
+  'etsy':       { top:'35%', left:'30%', country:'New York' },
+  'ebay':       { top:'30%', left:'28%', country:'San José' },
+  'h&m':        { top:'22%', left:'50%', country:'Stockholm' },
+  'shein':      { top:'40%', left:'72%', country:'Guangzhou' },
+  'aliexpress': { top:'38%', left:'75%', country:'Hangzhou' },
+  'mango':      { top:'35%', left:'44%', country:'Barcelone' },
+  'zara':       { top:'35%', left:'43%', country:'A Coruña' },
+  'bershka':    { top:'35%', left:'43%', country:'Barcelone' },
+};
+
+function getStorePosition(storeName) {
+  if (!storeName) return null;
+  const key = storeName.toLowerCase().split(' ')[0].replace('.com','').replace('.fr','').replace('.be','');
+  return STORE_POSITIONS[key] || null;
+}
+
+function MapPreview({ results }) {
+  const [hoveredPin, setHoveredPin] = useState(null);
+
+  // Construit les pins à partir des vrais résultats
+  const pins = [];
+  const seenStores = new Set();
+
+  (results || []).forEach(item => {
+    if (!item.store) return;
+    const storeKey = item.store.toLowerCase().split(' ')[0];
+    if (seenStores.has(storeKey)) return;
+    const pos = getStorePosition(item.store);
+    if (!pos) return;
+    seenStores.add(storeKey);
+    pins.push({
+      ...pos,
+      label: pos.country,
+      store: item.store,
+      match: item.match,
+      price: item.price,
+      link: item.storeLink,
+      img: item.img,
+    });
+  });
+
+  // Si pas de résultats, affiche des pins par défaut
+  const displayPins = pins.length > 0 ? pins.slice(0, 8) : [
+    { top:'30%', left:'44%', label:'Bruxelles', store:'Local', match:97, price:'—', link:'#' },
+    { top:'32%', left:'46%', label:'Paris', store:'France', match:88, price:'—', link:'#' },
+    { top:'20%', left:'42%', label:'Londres', store:'UK', match:82, price:'—', link:'#' },
   ];
+
   return React.createElement('div', { className:'map-preview' },
     React.createElement('div', { className:'map-bg' }),
     React.createElement('div', { className:'map-grid' }),
-    pins.map((p,i) => React.createElement('div', {
-      key:i, className:'map-pin', style:{ top:p.top, left:p.left }
+
+    displayPins.map((p,i) => React.createElement('div', {
+      key:i, className:'map-pin', style:{ top:p.top, left:p.left },
+      onMouseEnter:()=>setHoveredPin(i),
+      onMouseLeave:()=>setHoveredPin(null),
     },
-      React.createElement('div', { className:'pin-bubble', style:{position:'relative'} },
-        `${p.label} · ${p.match}%`
+      // Tooltip au survol
+      hoveredPin === i && React.createElement('div', {
+        style:{
+          position:'absolute', bottom:'calc(100% + 8px)', left:'50%',
+          transform:'translateX(-50%)',
+          background:'var(--dark2)', border:'1px solid var(--border2)',
+          borderRadius:'var(--radius)', padding:'10px 14px',
+          minWidth:180, zIndex:20, pointerEvents:'auto',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.5)',
+        }
+      },
+        p.img && React.createElement('img', {
+          src:p.img, alt:p.store,
+          style:{width:'100%',height:70,objectFit:'cover',borderRadius:6,marginBottom:8,display:'block'}
+        }),
+        React.createElement('div', { style:{fontWeight:700,fontSize:'0.85rem',marginBottom:2,color:'var(--text)'} }, p.store),
+        React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)',marginBottom:6} }, `📍 ${p.label}`),
+        p.price && p.price !== '—' &&
+          React.createElement('div', { style:{fontSize:'0.88rem',color:'var(--primary)',fontWeight:700,marginBottom:4} }, `${p.price} €`),
+        React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--success)',marginBottom:8} },
+          `Correspondance : ${p.match}%`
+        ),
+        p.link && p.link !== '#' && p.link.startsWith('http') &&
+          React.createElement('a', {
+            href:p.link,
+            target:'_blank',
+            rel:'noopener noreferrer',
+            style:{
+              display:'block', padding:'5px 10px', background:'var(--primary)', color:'white',
+              borderRadius:6, fontSize:'0.75rem', textAlign:'center', textDecoration:'none',
+              fontWeight:600
+            }
+          }, "Voir l'offre →")
       ),
+
+      React.createElement('div', {
+        className:'pin-bubble', style:{position:'relative', cursor:'pointer'},
+      }, `${p.store} · ${p.match}%`),
       React.createElement('div', { className:'pin-dot' })
     )),
-    React.createElement('div', { className:'map-label' }, '🗺 Vue mondiale — résultats géolocalisés')
+
+    React.createElement('div', { className:'map-label' },
+      pins.length > 0
+        ? `🗺 ${pins.length} marchand${pins.length>1?'s':''} localisé${pins.length>1?'s':''} — survolez pour les détails`
+        : '🗺 Vue mondiale — lancez une recherche pour localiser les marchands'
+    )
   );
 }
 
@@ -259,12 +351,30 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
     );
   }
 
+  // Description fallback : titre + extensions si desc vide
+  const displayDesc = item.desc && item.desc !== 'Description non disponible.'
+    ? item.desc
+    : item.extensions && item.extensions.length > 0
+      ? item.extensions.join(' · ')
+      : item.title;
+
+  const validLink = item.storeLink && item.storeLink !== '#' && item.storeLink.startsWith('http')
+    ? item.storeLink : null;
+
   return React.createElement('div', { className:'result-item fade-in' },
-    React.createElement('div', { className:'result-img', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
-      item.img
-        ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>e.target.style.display='none' })
-        : React.createElement('span', { className:'img-placeholder' }, '📦')
-    ),
+    // Image cliquable → ouvre l'offre
+    validLink
+      ? React.createElement('a', { href:validLink, target:'_blank', rel:'noopener noreferrer', className:'result-img', style:{cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'} },
+          item.img
+            ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>{ e.target.style.display='none'; } })
+            : React.createElement('span', { className:'img-placeholder' }, '📦')
+        )
+      : React.createElement('div', { className:'result-img', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
+          item.img
+            ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>{ e.target.style.display='none'; } })
+            : React.createElement('span', { className:'img-placeholder' }, '📦')
+        ),
+
     React.createElement('div', { className:'result-body', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
       React.createElement('div', { className:'result-meta' },
         React.createElement('div', { className:'result-title' }, item.title),
@@ -275,9 +385,9 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
           }, item.matchReason)
         )
       ),
-      React.createElement('div', { className:'result-desc' }, item.desc),
+      React.createElement('div', { className:'result-desc' }, displayDesc),
       React.createElement('div', { className:'result-footer' },
-        item.price && React.createElement('div', { className:'result-price' },
+        item.price && item.price !== '—' && React.createElement('div', { className:'result-price' },
           `${item.price} €`,
           item.oldPrice && React.createElement('span', { className:'old' }, `${item.oldPrice} €`)
         ),
@@ -290,12 +400,6 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
           React.createElement('span', { className:'result-delivery' }, `⚡ ${item.delivery}`),
         item.badge && React.createElement('span', { className:'new-badge' }, item.badge)
       ),
-      item.extensions && item.extensions.length > 0 &&
-        React.createElement('div', { className:'chip-group', style:{marginTop:6} },
-          item.extensions.slice(0,4).map((ext,i) =>
-            React.createElement('span', { key:i, className:'chip', style:{fontSize:'0.72rem',padding:'2px 8px'} }, ext)
-          )
-        ),
       isExpanded && React.createElement('div', { className:'reviews-section', style:{marginTop:12} },
         React.createElement('div', { className:'reviews-title' }, '💬 Avis clients'),
         item.stars
@@ -307,21 +411,31 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
                 )
               ),
               React.createElement('div', { className:'no-reviews' },
-                `Les avis détaillés sont disponibles directement sur ${item.store}. Cliquez sur "Voir l'offre" pour les consulter.`
+                `Avis complets disponibles sur ${item.store}.`
               )
             )
           : React.createElement('div', { className:'no-reviews' }, 'Avis non disponibles pour cet article.')
       )
     ),
+
     React.createElement('div', { className:'result-actions' },
       React.createElement('button', {
         className:`btn-fav${favs.includes(item.id)?' active':''}`,
         onClick:e=>{ e.stopPropagation(); toggleFav(item.id); }
       }, React.createElement(HeartIcon, { filled:favs.includes(item.id) })),
-      React.createElement('a', {
-        href:item.storeLink, target:'_blank', rel:'noopener noreferrer',
-        className:'btn-visit', onClick:e=>e.stopPropagation()
-      }, "Voir l'offre →")
+      validLink
+        ? React.createElement('a', {
+            href:validLink,
+            target:'_blank',
+            rel:'noopener noreferrer',
+            className:'btn-visit',
+            style:{display:'inline-block',textDecoration:'none',textAlign:'center'},
+            onClick:e=>e.stopPropagation()
+          }, "Voir l'offre →")
+        : React.createElement('span', {
+            className:'btn-visit',
+            style:{opacity:0.4,cursor:'not-allowed'}
+          }, "Lien indisponible")
     )
   );
 }
@@ -842,7 +956,7 @@ function App() {
 
         showMap && React.createElement('div', { style:{marginBottom:16} },
           React.createElement('div', { className:'section-title' }, '🗺 Disponibilité mondiale'),
-          React.createElement(MapPreview, null)
+          React.createElement(MapPreview, { results: filteredResults })
         ),
 
         loading && React.createElement('div', { className:'loading' },
