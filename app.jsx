@@ -48,6 +48,61 @@ const NEW_ARRIVALS = [
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const { useState, useEffect, useRef, useCallback } = React;
 
+// ─── AUTH HELPERS ────────────────────────────────────────────
+async function authCall(action, payload = {}) {
+  const session = JSON.parse(localStorage.getItem('findit_session') || 'null');
+  const res = await fetch('/.netlify/functions/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, token: session?.access_token, ...payload })
+  });
+  return res.json();
+}
+
+function useAuth() {
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(() => JSON.parse(localStorage.getItem('findit_session') || 'null'));
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.access_token) {
+      authCall('get_profile').then(data => {
+        if (data.success) setUser(data.user);
+        else { localStorage.removeItem('findit_session'); setSession(null); }
+      });
+    }
+  }, []);
+
+  async function login(email, password) {
+    setLoading(true);
+    const data = await authCall('login', { email, password });
+    setLoading(false);
+    if (data.error) throw new Error(data.error);
+    localStorage.setItem('findit_session', JSON.stringify(data.session));
+    setSession(data.session);
+    setUser(data.user);
+    return data;
+  }
+
+  async function signup(email, password, name) {
+    setLoading(true);
+    const data = await authCall('signup', { email, password, data: { name } });
+    setLoading(false);
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  async function logout() {
+    await authCall('logout');
+    localStorage.removeItem('findit_session');
+    setSession(null); setUser(null);
+  }
+
+  return { user, session, loading, login, signup, logout, isLoggedIn: !!session?.access_token };
+}
+
+
+
 function getMatchClass(pct) {
   if (pct >= 90) return 'match-badge high';
   if (pct >= 75) return 'match-badge mid';
@@ -421,8 +476,24 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
     React.createElement('div', { className:'result-actions' },
       React.createElement('button', {
         className:`btn-fav${favs.includes(item.id)?' active':''}`,
-        onClick:e=>{ e.stopPropagation(); toggleFav(item.id); }
+        onClick:e=>{ e.stopPropagation(); toggleFav(item.id); },
+        title:'Ajouter aux favoris'
       }, React.createElement(HeartIcon, { filled:favs.includes(item.id) })),
+      React.createElement('button', {
+        className:'btn-icon',
+        title:'Partager',
+        onClick:e=>{
+          e.stopPropagation();
+          const url = item.storeLink || window.location.href;
+          const text = `${item.title} — ${item.price ? item.price + ' €' : ''} sur ${item.store}`;
+          if (navigator.share) {
+            navigator.share({ title: item.title, text, url }).catch(()=>{});
+          } else {
+            navigator.clipboard.writeText(url).then(()=>{ alert('Lien copié !'); });
+          }
+        },
+        style:{width:34,height:34,borderRadius:'99px',background:'var(--dark3)',border:'1px solid var(--border)',color:'var(--text3)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}
+      }, React.createElement(SvgIcon, { d:'M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13' })),
       validLink
         ? React.createElement('a', {
             href:validLink,
@@ -640,13 +711,44 @@ function UploadModal({ onClose, onSearchWithAnalysis }) {
   );
 }
 
-// ─── PROFILE MODAL ───────────────────────────────────────────────────────────
-function ProfileModal({ onClose }) {
+// ─── PROFILE MODAL ─────────────────────────────────────────────────────────────
+function ProfileModal({ onClose, auth, onSearchFromHistory }) {
   const [tab, setTab] = useState('history');
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [mode, setMode] = useState('login'); // login | signup
   const [form, setForm] = useState({ name:'', email:'', pass:'' });
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  if (!loggedIn) {
+  useEffect(() => {
+    if (auth.isLoggedIn && !profile) {
+      setLoadingProfile(true);
+      authCall('get_profile').then(data => {
+        if (data.success) setProfile(data);
+        setLoadingProfile(false);
+      });
+    }
+  }, [auth.isLoggedIn]);
+
+  async function handleAuth() {
+    setError(null);
+    try {
+      if (mode === 'login') {
+        await auth.login(form.email, form.pass);
+      } else {
+        const res = await auth.signup(form.email, form.pass, form.name);
+        if (res.success) setSuccess('Compte créé ! Vérifiez vos emails pour confirmer.');
+      }
+    } catch(e) { setError(e.message); }
+  }
+
+  const initials = auth.user?.user_metadata?.full_name
+    ? auth.user.user_metadata.full_name.split(' ').map(n=>n[0]).join('').toUpperCase().substring(0,2)
+    : auth.user?.email?.substring(0,2).toUpperCase() || 'JD';
+
+  // ── Non connecté
+  if (!auth.isLoggedIn) {
     return React.createElement('div', { className:'modal-overlay', onClick:onClose },
       React.createElement('div', { className:'modal', onClick:e=>e.stopPropagation() },
         React.createElement('div', { className:'modal-header' },
@@ -656,29 +758,65 @@ function ProfileModal({ onClose }) {
           )
         ),
         React.createElement('div', { className:'modal-body' },
-          React.createElement('div', { className:'ai-banner', style:{marginBottom:20} },
-            React.createElement('div', { className:'ai-banner-head' },
-              React.createElement('div', { className:'ai-banner-title' }, '✨ Espace personnel')
-            ),
-            React.createElement('p', null, 'Connectez-vous pour sauvegarder vos recherches, recevoir des recommandations IA et découvrir les nouveautés.')
+          // Toggle login/signup
+          React.createElement('div', { style:{display:'flex',gap:0,marginBottom:20,background:'var(--dark3)',borderRadius:'var(--radius)',padding:3} },
+            ['login','signup'].map(m => React.createElement('button', {
+              key:m,
+              onClick:()=>{ setMode(m); setError(null); setSuccess(null); },
+              style:{
+                flex:1, padding:'8px', border:'none', borderRadius:'var(--radius)',
+                background: mode===m ? 'var(--primary)' : 'transparent',
+                color: mode===m ? 'white' : 'var(--text2)',
+                fontFamily:'var(--font-head)', fontWeight:700, fontSize:'0.85rem', cursor:'pointer'
+              }
+            }, m==='login' ? 'Se connecter' : 'Créer un compte'))
           ),
-          ['name','email','pass'].map(k => React.createElement('div', { key:k },
-            React.createElement('div', { className:'input-label' },
-              k==='name'?'Nom complet':k==='email'?'Adresse email':'Mot de passe'),
-            React.createElement('input', {
-              className:'input-field', type:k==='pass'?'password':'text',
-              placeholder:k==='name'?'Jean Dupont':k==='email'?'jean@email.com':'••••••••',
-              value:form[k], onChange:e=>setForm(f=>({...f,[k]:e.target.value}))
+
+          error && React.createElement('div', { style:{
+            background:'rgba(231,76,60,0.1)',border:'1px solid rgba(231,76,60,0.3)',
+            borderRadius:'var(--radius)',padding:'10px 14px',marginBottom:12,
+            fontSize:'0.82rem',color:'#e74c3c'
+          } }, error),
+
+          success && React.createElement('div', { style:{
+            background:'rgba(46,204,113,0.1)',border:'1px solid rgba(46,204,113,0.3)',
+            borderRadius:'var(--radius)',padding:'10px 14px',marginBottom:12,
+            fontSize:'0.82rem',color:'var(--success)'
+          } }, success),
+
+          mode === 'signup' && React.createElement('div', null,
+            React.createElement('div', { className:'input-label' }, 'Nom complet'),
+            React.createElement('input', { className:'input-field', placeholder:'Jean Dupont',
+              value:form.name, onChange:e=>setForm(f=>({...f,name:e.target.value})) })
+          ),
+          React.createElement('div', null,
+            React.createElement('div', { className:'input-label' }, 'Email'),
+            React.createElement('input', { className:'input-field', type:'email', placeholder:'jean@email.com',
+              value:form.email, onChange:e=>setForm(f=>({...f,email:e.target.value})) })
+          ),
+          React.createElement('div', null,
+            React.createElement('div', { className:'input-label' }, 'Mot de passe'),
+            React.createElement('input', { className:'input-field', type:'password', placeholder:'••••••••',
+              value:form.pass, onChange:e=>setForm(f=>({...f,pass:e.target.value})),
+              onKeyDown:e=>e.key==='Enter'&&handleAuth()
             })
-          )),
-          React.createElement('button', { className:'btn-primary', onClick:()=>setLoggedIn(true) },
-            'Se connecter / Créer un compte'
+          ),
+          React.createElement('button', {
+            className:'btn-primary',
+            onClick:handleAuth,
+            disabled:auth.loading,
+            style:{opacity:auth.loading?0.7:1}
+          }, auth.loading ? '⏳ Connexion…' : mode==='login' ? 'Se connecter' : 'Créer mon compte'),
+
+          React.createElement('div', { style:{textAlign:'center',marginTop:12,fontSize:'0.75rem',color:'var(--text3)'} },
+            '🔒 Vos données sont sécurisées avec Supabase'
           )
         )
       )
     );
   }
 
+  // ── Connecté
   return React.createElement('div', { className:'modal-overlay', onClick:onClose },
     React.createElement('div', { className:'modal', style:{maxWidth:560}, onClick:e=>e.stopPropagation() },
       React.createElement('div', { className:'modal-header' },
@@ -687,59 +825,110 @@ function ProfileModal({ onClose }) {
           React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
         )
       ),
+
+      // Profil hero
       React.createElement('div', { className:'profile-hero' },
         React.createElement('div', { className:'profile-avatar-wrap' },
-          React.createElement('div', { className:'profile-avatar' }, 'JD')
+          React.createElement('div', { className:'profile-avatar' }, initials)
         ),
-        React.createElement('div', { className:'profile-name' }, 'Jean Dupont'),
-        React.createElement('div', { className:'profile-email' }, 'jean.dupont@email.com')
+        React.createElement('div', { className:'profile-name' },
+          auth.user?.user_metadata?.full_name || auth.user?.email?.split('@')[0] || 'Utilisateur'
+        ),
+        React.createElement('div', { className:'profile-email' }, auth.user?.email),
+        React.createElement('button', {
+          onClick:()=>{ auth.logout(); onClose(); },
+          style:{
+            marginTop:10, background:'none', border:'1px solid var(--border)',
+            color:'var(--text3)', fontSize:'0.78rem', padding:'4px 12px',
+            borderRadius:'99px', cursor:'pointer'
+          }
+        }, 'Se déconnecter')
       ),
+
+      // Tabs
       React.createElement('div', { className:'tabs' },
-        [['history','🕐 Historique'],['reco','✨ Recommandations'],['new','🆕 Nouveautés']].map(([id,l]) =>
+        [['history','🕐 Historique'],['favorites','❤️ Favoris'],['reco','✨ Recommandations']].map(([id,l]) =>
           React.createElement('div', { key:id, className:`tab${tab===id?' active':''}`, onClick:()=>setTab(id) }, l)
         )
       ),
-      tab==='history' && React.createElement('div', { style:{maxHeight:320,overflowY:'auto'} },
-        HISTORY_ITEMS.map(h => React.createElement('div', { key:h.id, className:'history-item' },
-          React.createElement('div', { className:'history-thumb' }, h.emoji),
-          React.createElement('div', null,
-            React.createElement('div', { className:'history-query' }, h.query),
-            React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)'} }, '12 résultats trouvés')
-          ),
-          React.createElement('div', { className:'history-date' }, h.date)
-        ))
+
+      // Historique
+      tab==='history' && React.createElement('div', { style:{maxHeight:360,overflowY:'auto'} },
+        loadingProfile
+          ? React.createElement('div', { style:{padding:20,textAlign:'center',color:'var(--text3)'} }, '⏳ Chargement…')
+          : profile?.history?.length > 0
+            ? profile.history.map((h,i) => React.createElement('div', {
+                key:i, className:'history-item',
+                onClick:()=>{ onSearchFromHistory(h.query, h.category); onClose(); }
+              },
+                React.createElement('div', { className:'history-thumb' }, '🔍'),
+                React.createElement('div', null,
+                  React.createElement('div', { className:'history-query' }, h.query),
+                  React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--text3)'} },
+                    `${h.results_count} résultats · ${h.category !== 'all' ? h.category : 'Toutes catégories'}`
+                  )
+                ),
+                React.createElement('div', { className:'history-date' },
+                  new Date(h.created_at).toLocaleDateString('fr-FR', {day:'numeric',month:'short'})
+                )
+              ))
+            : React.createElement('div', { style:{padding:24,textAlign:'center',color:'var(--text3)',fontSize:'0.85rem'} },
+                '🔍 Aucune recherche enregistrée encore.'
+              )
       ),
+
+      // Favoris
+      tab==='favorites' && React.createElement('div', { style:{maxHeight:360,overflowY:'auto'} },
+        loadingProfile
+          ? React.createElement('div', { style:{padding:20,textAlign:'center',color:'var(--text3)'} }, '⏳ Chargement…')
+          : profile?.favorites?.length > 0
+            ? React.createElement('div', { className:'reco-grid', style:{padding:12} },
+                profile.favorites.map((f,i) => React.createElement('div', { key:i, className:'reco-card' },
+                  React.createElement('div', { className:'reco-img' },
+                    f.img
+                      ? React.createElement('img', { src:f.img, alt:f.title, style:{width:'100%',height:'100%',objectFit:'cover'} })
+                      : '📦'
+                  ),
+                  React.createElement('div', { className:'reco-name' }, f.title),
+                  React.createElement('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'center'} },
+                    React.createElement('div', { className:'reco-price' }, f.price ? `${f.price} €` : '—'),
+                    React.createElement('div', { className:getMatchClass(f.match), style:{fontSize:'0.65rem'} }, `${f.match}%`)
+                  ),
+                  f.store_link && React.createElement('a', {
+                    href:f.store_link, target:'_blank', rel:'noopener noreferrer',
+                    style:{display:'block',marginTop:6,fontSize:'0.72rem',color:'var(--primary)',textDecoration:'none',textAlign:'center'}
+                  }, `🏪 ${f.store} →`)
+                ))
+              )
+            : React.createElement('div', { style:{padding:24,textAlign:'center',color:'var(--text3)',fontSize:'0.85rem'} },
+                '❤️ Aucun favori encore. Cliquez sur le ♡ sur un article !'
+              )
+      ),
+
+      // Recommandations IA
       tab==='reco' && React.createElement('div', { style:{padding:16} },
         React.createElement('div', { className:'ai-banner', style:{marginBottom:16} },
           React.createElement('div', { className:'ai-banner-head' },
-            React.createElement('div', { className:'ai-banner-title' }, '🤖 Recommandations IA personnalisées')
+            React.createElement('div', { className:'ai-banner-title' }, '🤖 Recommandations basées sur vos recherches')
           ),
-          React.createElement('p', null, 'Basé sur vos recherches, notre IA a sélectionné ces articles.')
+          React.createElement('p', null,
+            profile?.history?.length > 0
+              ? `Basé sur vos ${profile.history.length} recherches, voici ce qui pourrait vous intéresser.`
+              : 'Faites quelques recherches pour recevoir des recommandations personnalisées.'
+          )
         ),
-        React.createElement('div', { className:'reco-grid' },
-          NEW_ARRIVALS.map(r => React.createElement('div', { key:r.id, className:'reco-card' },
-            React.createElement('div', { className:'reco-img' }, r.emoji),
-            React.createElement('div', { className:'reco-name' }, r.name),
-            React.createElement('div', { className:'reco-price' }, `${r.price} €`),
-            React.createElement('div', { className:'reco-match' }, `Correspondance : ${r.match}%`)
-          ))
-        )
-      ),
-      tab==='new' && React.createElement('div', { style:{padding:16} },
-        React.createElement('div', { style:{display:'flex',alignItems:'center',gap:8,marginBottom:16} },
-          React.createElement('span', { className:'new-badge' }, "Mis à jour aujourd'hui à 03:00 UTC"),
-          React.createElement('span', { style:{fontSize:'0.78rem',color:'var(--text3)'} }, '≥ 80% de correspondance')
-        ),
-        React.createElement('div', { className:'reco-grid' },
-          NEW_ARRIVALS.map(r => React.createElement('div', { key:r.id, className:'reco-card' },
-            React.createElement('div', { className:'reco-img' }, r.emoji),
-            React.createElement('div', { style:{display:'flex',alignItems:'center',gap:4,marginBottom:4} },
-              React.createElement('span', { className:'new-badge' }, 'NEW'),
-              React.createElement('span', { className:'reco-match' }, `${r.match}%`)
-            ),
-            React.createElement('div', { className:'reco-name' }, r.name),
-            React.createElement('div', { className:'reco-price' }, `${r.price} €`)
-          ))
+        profile?.history?.length > 0 && React.createElement('div', { className:'reco-grid' },
+          ['Nouveautés', 'Tendances', 'Meilleures ventes', 'Promos'].map((label,i) =>
+            React.createElement('div', { key:i, className:'reco-card', style:{textAlign:'center',padding:16} },
+              React.createElement('div', { style:{fontSize:'1.5rem',marginBottom:8} },
+                ['✨','📈','🏆','🔥'][i]
+              ),
+              React.createElement('div', { className:'reco-name' }, label),
+              React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--text3)',marginTop:4} },
+                'Basé sur vos recherches'
+              )
+            )
+          )
         )
       )
     )
@@ -748,6 +937,7 @@ function ProfileModal({ onClose }) {
 
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 function App() {
+  const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -819,6 +1009,16 @@ function App() {
       setLoading(false);
       addToast(`✅ ${allResults.length} résultats trouvés pour "${searchQuery}"`);
 
+      // Sauvegarde la recherche si connecté
+      if (auth.isLoggedIn) {
+        authCall('save_search', { data: {
+          query: searchQuery,
+          category: searchCat,
+          results_count: allResults.length,
+          enhanced_query: allResults[0]?.enhancedQuery || ''
+        }});
+      }
+
     } catch (err) {
       clearInterval(msgInterval);
       setLoading(false);
@@ -866,7 +1066,7 @@ function App() {
         React.createElement('input', {
           placeholder:'Recherche rapide…', value:query,
           onChange:e=>setQuery(e.target.value),
-          onKeyDown:e=>e.key==='Enter'&&handleSearch()
+          onKeyDown:e=>{ if(e.key==='Enter') { handleSearch(e.target.value); } }
         })
       ),
       React.createElement('div', { className:'header-actions' },
@@ -876,7 +1076,15 @@ function App() {
         React.createElement('button', { className:'btn-icon', title:'Favoris' },
           React.createElement(SvgIcon, { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
         ),
-        React.createElement('button', { className:'avatar-btn', onClick:()=>setShowProfile(true) }, 'JD')
+        React.createElement('button', {
+          className:'avatar-btn', onClick:()=>setShowProfile(true),
+          title: auth.isLoggedIn ? 'Mon compte' : 'Connexion',
+          style:{ position:'relative' }
+        },
+          auth.isLoggedIn
+            ? (auth.user?.user_metadata?.full_name || auth.user?.email || 'JD').substring(0,2).toUpperCase()
+            : '👤'
+        )
       )
     ),
 
@@ -1044,7 +1252,11 @@ function App() {
       onClose:()=>setShowUpload(false),
       onSearchWithAnalysis:handleImageSearch
     }),
-    showProfile && React.createElement(ProfileModal, { onClose:()=>setShowProfile(false) }),
+    showProfile && React.createElement(ProfileModal, {
+      onClose:()=>setShowProfile(false),
+      auth,
+      onSearchFromHistory:(q,cat)=>{ setQuery(q); setActiveCategory(cat||'all'); handleSearch(q, cat||'all'); }
+    }),
     React.createElement(Toast, { toasts })
   );
 }
