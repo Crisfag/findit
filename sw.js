@@ -1,65 +1,55 @@
-// Find It — Service Worker PWA
-const CACHE = 'findit-v1';
-const STATIC = ['/', '/index.html', '/style.css', '/app.jsx', '/manifest.json'];
+// Find It — Service Worker v2 (Network First — pas de cache JS/CSS)
+const CACHE = 'findit-v2';
 
-// Installation — met en cache les fichiers statiques
+// À l'installation — ne cache QUE index.html
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(STATIC)).then(() => self.skipWaiting())
-  );
+  e.waitUntil(self.skipWaiting());
 });
 
-// Activation — nettoie les vieux caches
+// Activation — supprime tous les vieux caches
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch — Network first pour les APIs, Cache first pour les assets
+// Fetch — Network ALWAYS first, pas de cache sur JS/CSS/API
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // APIs Netlify Functions → toujours réseau
-  if (url.pathname.startsWith('/.netlify/')) {
-    return;
+  // Toujours réseau pour les APIs et assets JS/CSS
+  if (
+    url.pathname.startsWith('/.netlify/') ||
+    url.pathname.endsWith('.jsx') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css')
+  ) {
+    return; // Laisse le navigateur gérer normalement
   }
 
-  // Assets statiques → cache first
+  // Pour le reste (HTML), network first avec fallback cache
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, clone));
-        }
-        return response;
-      }).catch(() => caches.match('/index.html'));
-    })
+    fetch(e.request)
+      .then(response => response)
+      .catch(() => caches.match('/index.html'))
   );
 });
 
-// Push notifications (pour les nouveautés)
+// Push notifications
 self.addEventListener('push', e => {
-  const data = e.data?.json() || { title: 'Find It', body: 'Nouvelles offres disponibles !' };
+  const data = e.data?.json() || { title: 'Find It', body: 'Nouvelles offres !' };
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/manifest.json',
-      badge: '/manifest.json',
       tag: 'findit-notification',
       data: { url: data.url || '/' }
     })
   );
 });
 
-// Clic sur notification → ouvre l'app
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(
-    clients.openWindow(e.notification.data?.url || '/')
-  );
+  e.waitUntil(clients.openWindow(e.notification.data?.url || '/'));
 });
