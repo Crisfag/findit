@@ -1,17 +1,17 @@
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { id:'all',     label:'Tout',        icon:'🔍' },
-  { id:'fashion', label:'Vêtements',   icon:'👗' },
-  { id:'tools',   label:'Bricolage',   icon:'🔧' },
-  { id:'deco',    label:'Décoration',  icon:'🏠' },
-  { id:'games',   label:'Jeux',        icon:'🎮' },
-  { id:'books',   label:'Livres',      icon:'📚' },
-  { id:'garden',  label:'Jardin',      icon:'🌿' },
-  { id:'pets',    label:'Animaux',     icon:'🐾' },
-  { id:'kids',    label:'Enfants',     icon:'🧸' },
-  { id:'sports',  label:'Sport',       icon:'⚽' },
-  { id:'beauty',  label:'Beauté',      icon:'💄' },
-  { id:'electro', label:'Électronique',icon:'📱' },
+  { id:'all',     label:'Tout',         icon:'🔍' },
+  { id:'fashion', label:'Vêtements',    icon:'👗' },
+  { id:'tools',   label:'Bricolage',    icon:'🔧' },
+  { id:'deco',    label:'Décoration',   icon:'🏠' },
+  { id:'games',   label:'Jeux',         icon:'🎮' },
+  { id:'books',   label:'Livres',       icon:'📚' },
+  { id:'garden',  label:'Jardin',       icon:'🌿' },
+  { id:'pets',    label:'Animaux',      icon:'🐾' },
+  { id:'kids',    label:'Enfants',      icon:'🧸' },
+  { id:'sports',  label:'Sport',        icon:'⚽' },
+  { id:'beauty',  label:'Beauté',       icon:'💄' },
+  { id:'electro', label:'Électronique', icon:'📱' },
 ];
 
 const CAT_LABELS = {
@@ -64,8 +64,7 @@ function SvgIcon({ d, size=18 }) {
 
 function HeartIcon({ filled }) {
   return React.createElement('svg', {
-    style:{ fill:filled?'#FF4B2B':'none', stroke:filled?'#FF4B2B':'currentColor',
-      strokeWidth:1.8, width:15, height:15 }
+    style:{ fill:filled?'#FF4B2B':'none', stroke:filled?'#FF4B2B':'currentColor', strokeWidth:1.8, width:15, height:15 }
   }, React.createElement('path', {
     d:'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'
   }));
@@ -96,7 +95,7 @@ function Toast({ toasts }) {
 function Logo() {
   return React.createElement('a', { href:'#', className:'logo' },
     React.createElement('div', { className:'logo-icon' },
-      React.createElement('svg', { viewBox:'0 0 24 24', xmlns:'http://www.w3.org/2000/svg' },
+      React.createElement('svg', { viewBox:'0 0 24 24' },
         React.createElement('path', { d:'M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z' }),
         React.createElement('path', { d:'M9 2v20M12 8h6M12 12h6M12 16h4', stroke:'white', strokeWidth:1.5, fill:'none', strokeLinecap:'round' }),
         React.createElement('circle', { cx:7.5, cy:17, r:2.5, fill:'#FF8C42' }),
@@ -118,7 +117,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
   return React.createElement('aside', { className:`sidebar${collapsed?' collapsed':''}` },
     React.createElement('div', { className:'nav-header' }, 'Filtres de recherche'),
 
-    // Prix
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Prix'),
       React.createElement('div', { className:'filter-label' }, 'Fourchette ',
@@ -134,7 +132,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
       )
     ),
 
-    // Livraison
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Délai de livraison'),
       React.createElement('div', { className:'chip-group' },
@@ -145,7 +142,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
       )
     ),
 
-    // Couleurs
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Couleur'),
       React.createElement('div', { className:'color-chips' },
@@ -156,7 +152,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
       )
     ),
 
-    // Tailles
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Taille'),
       React.createElement('div', { className:'chip-group' },
@@ -167,7 +162,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
       )
     ),
 
-    // Matières
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Matière'),
       React.createElement('div', { className:'chip-group' },
@@ -178,7 +172,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
       )
     ),
 
-    // Type commerce
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Type de commerce'),
       React.createElement('div', { className:'check-group' },
@@ -191,7 +184,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
       )
     ),
 
-    // Ressemblance
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Ressemblance minimum'),
       React.createElement('div', { className:'filter-label' }, 'Seuil ',
@@ -201,7 +193,6 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
         onChange:e=>setFilters(f=>({...f,minMatch:Number(e.target.value)})) })
     ),
 
-    // Note
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Note minimale'),
       React.createElement('div', { className:'rating-filter' },
@@ -215,7 +206,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
 }
 
 // ─── MAP PREVIEW ─────────────────────────────────────────────────────────────
-function MapPreview({ results }) {
+function MapPreview() {
   const pins = [
     { top:'30%', left:'22%', label:'Bruxelles', match:97 },
     { top:'55%', left:'45%', label:'Paris', match:92 },
@@ -247,8 +238,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
     return React.createElement('div', { className:'result-card fade-in', onClick:()=>onExpand(item.id) },
       React.createElement('div', { className:'card-img' },
         item.img
-          ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy',
-              onError:e=>{ e.target.style.display='none'; } })
+          ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>e.target.style.display='none' })
           : React.createElement('span', { className:'img-placeholder' }, '📦')
       ),
       React.createElement('div', { className:'card-body' },
@@ -270,15 +260,11 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
   }
 
   return React.createElement('div', { className:'result-item fade-in' },
-    // Image
     React.createElement('div', { className:'result-img', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
       item.img
-        ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy',
-            onError:e=>{ e.target.style.display='none'; } })
+        ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>e.target.style.display='none' })
         : React.createElement('span', { className:'img-placeholder' }, '📦')
     ),
-
-    // Body
     React.createElement('div', { className:'result-body', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
       React.createElement('div', { className:'result-meta' },
         React.createElement('div', { className:'result-title' }, item.title),
@@ -299,16 +285,12 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
           React.createElement('span', { className:'result-delivery' }, `⚡ ${item.delivery}`),
         item.badge && React.createElement('span', { className:'new-badge' }, item.badge)
       ),
-
-      // Extensions (tags produit SerpApi)
       item.extensions && item.extensions.length > 0 &&
         React.createElement('div', { className:'chip-group', style:{marginTop:6} },
           item.extensions.slice(0,4).map((ext,i) =>
             React.createElement('span', { key:i, className:'chip', style:{fontSize:'0.72rem',padding:'2px 8px'} }, ext)
           )
         ),
-
-      // Expanded — pas d'avis réels depuis SerpApi Shopping sans appel produit dédié
       isExpanded && React.createElement('div', { className:'reviews-section', style:{marginTop:12} },
         React.createElement('div', { className:'reviews-title' }, '💬 Avis clients'),
         item.stars
@@ -316,7 +298,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
               React.createElement('div', { style:{display:'flex',alignItems:'center',gap:12,marginBottom:8} },
                 React.createElement(Stars, { count:item.stars, size:16 }),
                 React.createElement('span', { style:{color:'var(--text2)',fontSize:'0.85rem'} },
-                  item.reviews ? `${item.reviews.toLocaleString()} avis sur ${item.store}` : `Note sur ${item.store}`
+                  item.reviews ? `${item.reviews.toLocaleString()} avis sur ${item.store}` : `Noté sur ${item.store}`
                 )
               ),
               React.createElement('div', { className:'no-reviews' },
@@ -326,8 +308,6 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
           : React.createElement('div', { className:'no-reviews' }, 'Avis non disponibles pour cet article.')
       )
     ),
-
-    // Actions
     React.createElement('div', { className:'result-actions' },
       React.createElement('button', {
         className:`btn-fav${favs.includes(item.id)?' active':''}`,
@@ -341,56 +321,201 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
   );
 }
 
-// ─── UPLOAD MODAL ────────────────────────────────────────────────────────────
-function UploadModal({ onClose, onSearch }) {
+// ─── UPLOAD MODAL avec IA Vision ─────────────────────────────────────────────
+function UploadModal({ onClose, onSearchWithAnalysis }) {
   const [preview, setPreview] = useState(null);
+  const [imageBase64, setImageBase64] = useState(null);
+  const [mediaType, setMediaType] = useState('image/jpeg');
   const [dragging, setDragging] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [error, setError] = useState(null);
   const inputRef = useRef();
 
   function handleFile(file) {
     if (!file) return;
+    setAnalysis(null); setError(null);
+    setMediaType(file.type || 'image/jpeg');
     const reader = new FileReader();
-    reader.onload = e => setPreview(e.target.result);
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      setPreview(dataUrl);
+      // Extrait le base64 pur (sans le préfixe data:image/...;base64,)
+      const base64 = dataUrl.split(',')[1];
+      setImageBase64(base64);
+    };
     reader.readAsDataURL(file);
   }
 
+  async function analyzeImage() {
+    if (!imageBase64) return;
+    setAnalyzing(true); setError(null);
+    try {
+      const res = await fetch('/.netlify/functions/analyze-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64, mediaType })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setAnalysis(data.analysis);
+    } catch (err) {
+      setError("Erreur d'analyse : " + err.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  function launchSearch() {
+    if (!analysis) return;
+    onSearchWithAnalysis({
+      query: analysis.searchQuery,
+      category: analysis.category || 'all',
+      description: analysis.description,
+      productName: analysis.productName,
+    });
+    onClose();
+  }
+
+  // Styles inline pour la modal IA
+  const analysisCard = {
+    background:'var(--dark3)', border:'1px solid var(--border2)',
+    borderRadius:'var(--radius-lg)', padding:16, marginBottom:16
+  };
+  const chip = {
+    background:'rgba(255,75,43,0.1)', border:'1px solid rgba(255,75,43,0.25)',
+    color:'var(--primary)', fontSize:'0.75rem', padding:'3px 10px',
+    borderRadius:'99px', display:'inline-block', margin:'2px'
+  };
+
   return React.createElement('div', { className:'modal-overlay', onClick:onClose },
-    React.createElement('div', { className:'modal', onClick:e=>e.stopPropagation() },
+    React.createElement('div', { className:'modal', style:{maxWidth:520}, onClick:e=>e.stopPropagation() },
       React.createElement('div', { className:'modal-header' },
-        React.createElement('div', { className:'modal-title' }, '📸 Recherche par image'),
+        React.createElement('div', { className:'modal-title' }, '📸 Recherche par image IA'),
         React.createElement('button', { className:'modal-close', onClick:onClose },
           React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
         )
       ),
+
       React.createElement('div', { className:'modal-body' },
-        preview
-          ? React.createElement('div', null,
-              React.createElement('img', { src:preview, className:'upload-preview', alt:'Aperçu' }),
-              React.createElement('p', { style:{fontSize:'0.8rem',color:'var(--text3)',marginBottom:12,textAlign:'center'} },
-                "🤖 L'analyse d'image par IA sera disponible dans la prochaine version"
-              ),
-              React.createElement('button', { className:'btn-primary',
-                onClick:()=>{ onSearch('article similaire'); onClose(); }
-              }, '🔍 Rechercher des articles similaires'),
-              React.createElement('button', { className:'btn-secondary', onClick:()=>setPreview(null) }, "Changer l'image")
+
+        // ── Étape 1 : upload
+        !preview && React.createElement('div', null,
+          React.createElement('div', { className:'ai-banner', style:{marginBottom:16} },
+            React.createElement('div', { className:'ai-banner-head' },
+              React.createElement('div', { className:'ai-banner-title' }, '🤖 Identification automatique par Claude Vision')
+            ),
+            React.createElement('p', null, 'Photographiez n\'importe quel article — vêtement, outil, plante, meuble — et l\'IA identifie le produit et lance la recherche automatiquement.')
+          ),
+          React.createElement('div', {
+            className:`upload-zone${dragging?' drag':''}`,
+            onDragOver:e=>{ e.preventDefault(); setDragging(true); },
+            onDragLeave:()=>setDragging(false),
+            onDrop:e=>{ e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); },
+            onClick:()=>inputRef.current.click()
+          },
+            React.createElement(SvgIcon, { d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12', size:40 }),
+            React.createElement('p', null, 'Glissez une image ici ou ',
+              React.createElement('span', null, 'parcourez vos fichiers')
+            ),
+            React.createElement('p', { style:{fontSize:'0.75rem',color:'var(--text3)',marginTop:6} },
+              'JPG, PNG, WEBP — max 10MB'
             )
-          : React.createElement('div', null,
-              React.createElement('div', {
-                className:`upload-zone${dragging?' drag':''}`,
-                onDragOver:e=>{ e.preventDefault(); setDragging(true); },
-                onDragLeave:()=>setDragging(false),
-                onDrop:e=>{ e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); },
-                onClick:()=>inputRef.current.click()
-              },
-                React.createElement(SvgIcon, { d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12', size:40 }),
-                React.createElement('p', null, 'Glissez une image ici ou ',
-                  React.createElement('span', null, 'parcourez vos fichiers')
+          ),
+          React.createElement('input', { ref:inputRef, type:'file', accept:'image/*',
+            style:{display:'none'}, onChange:e=>handleFile(e.target.files[0]) })
+        ),
+
+        // ── Étape 2 : image chargée, analyse
+        preview && !analysis && React.createElement('div', null,
+          React.createElement('img', { src:preview, className:'upload-preview', alt:'Aperçu' }),
+
+          error && React.createElement('div', {
+            style:{background:'rgba(231,76,60,0.1)',border:'1px solid rgba(231,76,60,0.3)',
+              borderRadius:'var(--radius)',padding:'10px 14px',marginBottom:12,fontSize:'0.83rem',color:'#e74c3c'}
+          }, error),
+
+          analyzing
+            ? React.createElement('div', { className:'loading', style:{padding:'20px 0'} },
+                React.createElement('div', { className:'spinner' }),
+                React.createElement('p', null, '🤖 Claude analyse votre image…'),
+                React.createElement('p', { style:{fontSize:'0.75rem',color:'var(--text3)'} },
+                  'Identification du produit en cours'
+                )
+              )
+            : React.createElement('div', null,
+                React.createElement('button', { className:'btn-primary', onClick:analyzeImage },
+                  '🤖 Analyser avec Claude Vision'
                 ),
-                React.createElement('p', { style:{fontSize:'0.75rem',color:'var(--text3)',marginTop:6} }, 'JPG, PNG, WEBP — max 10MB')
+                React.createElement('button', { className:'btn-secondary', onClick:()=>{ setPreview(null); setImageBase64(null); } },
+                  "Changer d'image"
+                )
+              )
+        ),
+
+        // ── Étape 3 : résultat de l'analyse
+        preview && analysis && React.createElement('div', null,
+          // Miniature + résultat côte à côte
+          React.createElement('div', { style:{display:'flex',gap:12,marginBottom:16} },
+            React.createElement('img', { src:preview, alt:'Photo',
+              style:{width:80,height:80,objectFit:'cover',borderRadius:'var(--radius)',flexShrink:0} }),
+            React.createElement('div', { style:{flex:1} },
+              React.createElement('div', { style:{display:'flex',alignItems:'center',gap:8,marginBottom:4} },
+                React.createElement('span', { className:'new-badge' }, '✅ Identifié'),
+                React.createElement('span', { style:{fontSize:'0.75rem',color:'var(--text3)'} },
+                  `Confiance : ${analysis.confidence}%`
+                )
               ),
-              React.createElement('input', { ref:inputRef, type:'file', accept:'image/*',
-                style:{display:'none'}, onChange:e=>handleFile(e.target.files[0]) })
+              React.createElement('div', { style:{fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.95rem',marginBottom:4} },
+                analysis.productName
+              ),
+              React.createElement('div', { style:{fontSize:'0.8rem',color:'var(--text2)',lineHeight:1.4} },
+                analysis.description
+              )
             )
+          ),
+
+          // Détails de l'analyse
+          React.createElement('div', { style:analysisCard },
+            React.createElement('div', { className:'filter-title', style:{marginBottom:8} }, '🔍 Requête de recherche générée'),
+            React.createElement('div', { style:{
+              background:'var(--dark2)',border:'1px solid var(--border)',
+              borderRadius:'var(--radius)',padding:'8px 12px',
+              fontSize:'0.85rem',color:'var(--primary)',fontWeight:500,marginBottom:12
+            } }, `"${analysis.searchQuery}"`),
+
+            analysis.keyFeatures && analysis.keyFeatures.length > 0 &&
+              React.createElement('div', null,
+                React.createElement('div', { className:'filter-title', style:{marginBottom:6} }, '✨ Caractéristiques détectées'),
+                React.createElement('div', null,
+                  analysis.keyFeatures.map((f,i) => React.createElement('span', { key:i, style:chip }, f))
+                )
+              ),
+
+            analysis.estimatedPrice &&
+              React.createElement('div', { style:{marginTop:10,fontSize:'0.82rem',color:'var(--text2)'} },
+                '💰 Prix estimé : ',
+                React.createElement('strong', { style:{color:'var(--text)'} }, analysis.estimatedPrice)
+              )
+          ),
+
+          // Modifier la requête
+          React.createElement('div', { style:{marginBottom:12} },
+            React.createElement('div', { className:'input-label' }, 'Modifier la recherche si nécessaire :'),
+            React.createElement('input', {
+              className:'input-field', style:{marginBottom:0},
+              value:analysis.searchQuery,
+              onChange:e=>setAnalysis(a=>({...a,searchQuery:e.target.value}))
+            })
+          ),
+
+          React.createElement('button', { className:'btn-primary', onClick:launchSearch },
+            `🔍 Rechercher "${analysis.searchQuery}"`
+          ),
+          React.createElement('button', { className:'btn-secondary',
+            onClick:()=>{ setAnalysis(null); setPreview(null); setImageBase64(null); }
+          }, 'Nouvelle photo')
+        )
       )
     )
   );
@@ -520,6 +645,7 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [imageAnalysis, setImageAnalysis] = useState(null);
   const [filters, setFilters] = useState({
     priceMin:0, priceMax:2000, delivery:[], colors:[],
     sizes:[], materials:[], storeType:[], minMatch:50, minRating:0
@@ -531,30 +657,31 @@ function App() {
     setTimeout(() => setToasts(t => t.filter(x=>x.id!==id)), 3500);
   }
 
-  async function handleSearch(q) {
+  async function handleSearch(q, cat) {
     const searchQuery = (q || query).trim();
     if (!searchQuery) return;
+    const searchCat = cat || activeCategory;
 
     setLoading(true); setSearchDone(false); setError(null); setResults([]);
-    setLoadingMsg('🔍 Connexion aux sources mondiales…');
 
     const msgs = [
+      '🔍 Connexion aux sources mondiales…',
       '🌍 Consultation de Google Shopping…',
       '💰 Comparaison des prix en cours…',
       '⭐ Récupération des avis clients…',
       '📦 Tri par pertinence…'
     ];
     let msgIdx = 0;
+    setLoadingMsg(msgs[0]);
     const msgInterval = setInterval(() => {
       msgIdx = (msgIdx + 1) % msgs.length;
       setLoadingMsg(msgs[msgIdx]);
     }, 1200);
 
     try {
-      const catLabel = activeCategory !== 'all' ? (CAT_LABELS[activeCategory] || '') : '';
       const params = new URLSearchParams({
         q: searchQuery,
-        category: activeCategory,
+        category: searchCat,
         min_price: filters.priceMin || '',
         max_price: filters.priceMax < 2000 ? filters.priceMax : '',
         country: 'be',
@@ -563,7 +690,6 @@ function App() {
 
       const res = await fetch(`/.netlify/functions/search?${params.toString()}`);
       const data = await res.json();
-
       clearInterval(msgInterval);
 
       if (data.error) throw new Error(data.error);
@@ -572,19 +698,23 @@ function App() {
       setResults(allResults);
       setSearchDone(true);
       setLoading(false);
-
-      if (allResults.length > 0) {
-        addToast(`✅ ${allResults.length} résultats trouvés pour "${searchQuery}"`);
-      } else {
-        addToast('Aucun résultat trouvé — essayez des termes différents', 'info');
-      }
+      addToast(`✅ ${allResults.length} résultats trouvés pour "${searchQuery}"`);
 
     } catch (err) {
       clearInterval(msgInterval);
       setLoading(false);
       setError(err.message);
-      addToast('❌ Erreur de recherche : ' + err.message, 'error');
+      addToast('❌ Erreur : ' + err.message, 'error');
     }
+  }
+
+  // Appelé depuis UploadModal après analyse IA
+  function handleImageSearch({ query: q, category, description, productName }) {
+    setQuery(q);
+    setActiveCategory(category || 'all');
+    setImageAnalysis({ query:q, productName, description });
+    addToast(`🤖 IA a identifié : "${productName}"`);
+    handleSearch(q, category || 'all');
   }
 
   function toggleFav(id) {
@@ -592,7 +722,6 @@ function App() {
     addToast(favs.includes(id) ? 'Retiré des favoris' : 'Ajouté aux favoris ❤️');
   }
 
-  // Filtrage côté client
   const filteredResults = results.filter(r => {
     if (r.match < filters.minMatch) return false;
     if (filters.minRating && r.stars && r.stars < filters.minRating) return false;
@@ -608,7 +737,6 @@ function App() {
   });
 
   return React.createElement('div', null,
-    // ── HEADER
     React.createElement('header', null,
       React.createElement(Logo, null),
       React.createElement('div', { className:'header-search' },
@@ -633,7 +761,6 @@ function App() {
       )
     ),
 
-    // ── SIDEBAR TOGGLE
     React.createElement('button', {
       className:`sidebar-toggle${!sidebarOpen?' collapsed':''}`,
       onClick:()=>setSidebarOpen(v=>!v)
@@ -644,7 +771,7 @@ function App() {
 
       React.createElement('div', { className:`main-content${!sidebarOpen?' sidebar-collapsed':''}` },
 
-        // ── HERO
+        // Hero
         !searchDone && !loading && React.createElement('div', { className:'hero' },
           React.createElement('div', { className:'hero-badge' }, '✨ Recherche mondiale en temps réel'),
           React.createElement('h1', null, 'Trouvez n\'importe quel ',
@@ -663,7 +790,7 @@ function App() {
             React.createElement('div', { className:'search-divider' }),
             React.createElement('button', { className:'btn-camera', onClick:()=>setShowUpload(true) },
               React.createElement(SvgIcon, { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z M12 17a4 4 0 100-8 4 4 0 000 8z' }),
-              'Photo'
+              '📸 Photo IA'
             ),
             React.createElement('button', { className:'btn-search', onClick:()=>handleSearch() }, '🔍 Rechercher')
           ),
@@ -676,13 +803,23 @@ function App() {
           )
         ),
 
-        // ── MAP
-        showMap && React.createElement('div', { style:{marginBottom:16} },
-          React.createElement('div', { className:'section-title' }, '🗺 Disponibilité mondiale'),
-          React.createElement(MapPreview, { results })
+        // Bannière résultat IA
+        searchDone && imageAnalysis && React.createElement('div', {
+          className:'ai-banner fade-in', style:{marginBottom:16}
+        },
+          React.createElement('div', { className:'ai-banner-head' },
+            React.createElement('div', { className:'ai-banner-title' },
+              `🤖 IA a identifié : "${imageAnalysis.productName}"`
+            )
+          ),
+          React.createElement('p', null, imageAnalysis.description)
         ),
 
-        // ── LOADING
+        showMap && React.createElement('div', { style:{marginBottom:16} },
+          React.createElement('div', { className:'section-title' }, '🗺 Disponibilité mondiale'),
+          React.createElement(MapPreview, null)
+        ),
+
         loading && React.createElement('div', { className:'loading' },
           React.createElement('div', { className:'spinner' }),
           React.createElement('p', null, loadingMsg),
@@ -691,22 +828,21 @@ function App() {
           )
         ),
 
-        // ── ERROR
         error && React.createElement('div', { className:'empty-state' },
           React.createElement('div', { className:'empty-icon' }, '⚠️'),
           React.createElement('h3', null, 'Erreur de recherche'),
           React.createElement('p', null, error),
-          React.createElement('button', { className:'btn-primary', style:{marginTop:16,maxWidth:200,margin:'16px auto'},
+          React.createElement('button', { className:'btn-primary',
+            style:{marginTop:16,maxWidth:200,margin:'16px auto'},
             onClick:()=>handleSearch()
           }, 'Réessayer')
         ),
 
-        // ── RESULTS
         searchDone && React.createElement('div', { className:'fade-in' },
           React.createElement('div', { className:'categories', style:{justifyContent:'flex-start',marginBottom:16} },
             CATEGORIES.map(c => React.createElement('div', {
               key:c.id, className:`cat-chip${activeCategory===c.id?' active':''}`,
-              onClick:()=>{ setActiveCategory(c.id); handleSearch(query); }
+              onClick:()=>{ setActiveCategory(c.id); handleSearch(query, c.id); }
             }, c.icon, ' ', c.label))
           ),
 
@@ -737,7 +873,7 @@ function App() {
             ? React.createElement('div', { className:'empty-state' },
                 React.createElement('div', { className:'empty-icon' }, '🔍'),
                 React.createElement('h3', null, 'Aucun résultat pour ces filtres'),
-                React.createElement('p', null, 'Essayez d\'élargir vos critères de recherche.')
+                React.createElement('p', null, "Essayez d'élargir vos critères.")
               )
             : view === 'list'
               ? React.createElement('div', { className:'result-list' },
@@ -753,16 +889,22 @@ function App() {
                   }))
                 ),
 
-          React.createElement('div', { style:{marginTop:20,textAlign:'center'} },
-            React.createElement('button', { className:'btn-camera', style:{display:'inline-flex',margin:'0 auto'},
-              onClick:()=>setShowMap(v=>!v)
-            }, '🗺 ', showMap?'Masquer la carte':'Voir sur la carte mondiale')
+          React.createElement('div', { style:{marginTop:20,textAlign:'center',display:'flex',gap:12,justifyContent:'center',flexWrap:'wrap'} },
+            React.createElement('button', { className:'btn-camera', onClick:()=>setShowUpload(true) },
+              '📸 Nouvelle recherche par photo'
+            ),
+            React.createElement('button', { className:'btn-camera', onClick:()=>setShowMap(v=>!v) },
+              '🗺 ', showMap?'Masquer la carte':'Voir sur la carte'
+            )
           )
         )
       )
     ),
 
-    showUpload && React.createElement(UploadModal, { onClose:()=>setShowUpload(false), onSearch:q=>{setQuery(q);handleSearch(q);} }),
+    showUpload && React.createElement(UploadModal, {
+      onClose:()=>setShowUpload(false),
+      onSearchWithAnalysis:handleImageSearch
+    }),
     showProfile && React.createElement(ProfileModal, { onClose:()=>setShowProfile(false) }),
     React.createElement(Toast, { toasts })
   );
