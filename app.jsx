@@ -268,7 +268,12 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
     React.createElement('div', { className:'result-body', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
       React.createElement('div', { className:'result-meta' },
         React.createElement('div', { className:'result-title' }, item.title),
-        React.createElement('div', { className:getMatchClass(item.match) }, `${item.match}%`)
+        React.createElement('div', { style:{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0} },
+          React.createElement('div', { className:getMatchClass(item.match) }, `${item.match}%`),
+          item.matchReason && React.createElement('div', {
+            style:{fontSize:'0.65rem',color:'var(--text3)',maxWidth:120,textAlign:'right',lineHeight:1.3}
+          }, item.matchReason)
+        )
       ),
       React.createElement('div', { className:'result-desc' }, item.desc),
       React.createElement('div', { className:'result-footer' },
