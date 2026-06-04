@@ -1056,7 +1056,7 @@ function PriceCompareModal({ query, onClose }) {
           // Recommandation IA
           data.analysis && React.createElement('div', { className:'ai-banner', style:{marginBottom:16} },
             React.createElement('div', { className:'ai-banner-head' },
-              React.createElement('div', { className:'ai-banner-title' }, '🤖 Conseil d'achat IA')
+              React.createElement('div', { className:'ai-banner-title' }, "🤖 Conseil d’achat IA")
             ),
             React.createElement('p', null, data.analysis.recommendation),
             data.analysis.tip && React.createElement('p', { style:{marginTop:6,fontSize:'0.8rem',color:'var(--text3)'} },
@@ -1153,7 +1153,7 @@ function PWAInstallBanner() {
         'Installer Find It'
       ),
       React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)'} },
-        'Accès rapide depuis votre écran d'accueil'
+        "Accès rapide depuis votre écran d'accueil"
       )
     ),
     React.createElement('button', {
