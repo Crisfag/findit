@@ -48,6 +48,89 @@ const NEW_ARRIVALS = [
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const { useState, useEffect, useRef, useCallback } = React;
 
+// ─── AUTH HELPERS ────────────────────────────────────────────
+async function authCall(action, payload = {}) {
+  const session = JSON.parse(localStorage.getItem('findit_session') || 'null');
+  const res = await fetch('/.netlify/functions/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, token: session?.access_token, ...payload })
+  });
+  return res.json();
+}
+
+function useAuth() {
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(() => JSON.parse(localStorage.getItem('findit_session') || 'null'));
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.access_token) {
+      authCall('get_profile').then(data => {
+        if (data.success) setUser(data.user);
+        else { localStorage.removeItem('findit_session'); setSession(null); }
+      });
+    }
+  }, []);
+
+  async function login(email, password) {
+    setLoading(true);
+    const data = await authCall('login', { email, password });
+    setLoading(false);
+    if (data.error) throw new Error(data.error);
+    localStorage.setItem('findit_session', JSON.stringify(data.session));
+    setSession(data.session);
+    setUser(data.user);
+    return data;
+  }
+
+  async function signup(email, password, name) {
+    setLoading(true);
+    const data = await authCall('signup', { email, password, data: { name } });
+    setLoading(false);
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  async function logout() {
+    await authCall('logout');
+    localStorage.removeItem('findit_session');
+    setSession(null); setUser(null);
+  }
+
+  async function loginWithProvider(provider) {
+    const SUPABASE_URL = window._SUPABASE_URL || '';
+    // Redirige vers Supabase OAuth
+    const redirectUrl = encodeURIComponent(window.location.origin + '/auth/callback');
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectUrl}`;
+  }
+
+  // Gère le retour OAuth (token dans l'URL hash)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const sessionData = {
+        access_token: params.get('access_token'),
+        refresh_token: params.get('refresh_token'),
+        expires_in: params.get('expires_in'),
+      };
+      localStorage.setItem('findit_session', JSON.stringify(sessionData));
+      setSession(sessionData);
+      // Nettoie l'URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Charge le profil
+      authCall('get_profile').then(data => {
+        if (data.success) setUser(data.user);
+      });
+    }
+  }, []);
+
+  return { user, session, loading, login, signup, logout, loginWithProvider, isLoggedIn: !!session?.access_token };
+}
+
+
+
 function getMatchClass(pct) {
   if (pct >= 90) return 'match-badge high';
   if (pct >= 75) return 'match-badge mid';
@@ -279,34 +362,37 @@ function MapPreview({ results }) {
           position:'absolute', bottom:'calc(100% + 8px)', left:'50%',
           transform:'translateX(-50%)',
           background:'var(--dark2)', border:'1px solid var(--border2)',
-          borderRadius:'var(--radius)', padding:'8px 12px',
-          minWidth:160, zIndex:10, pointerEvents:'none',
-          boxShadow:'0 4px 16px rgba(0,0,0,0.4)',
+          borderRadius:'var(--radius)', padding:'10px 14px',
+          minWidth:180, zIndex:20, pointerEvents:'auto',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.5)',
         }
       },
         p.img && React.createElement('img', {
           src:p.img, alt:p.store,
-          style:{width:'100%',height:60,objectFit:'cover',borderRadius:6,marginBottom:6}
+          style:{width:'100%',height:70,objectFit:'cover',borderRadius:6,marginBottom:8,display:'block'}
         }),
-        React.createElement('div', { style:{fontWeight:700,fontSize:'0.82rem',marginBottom:2} }, p.store),
-        React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)',marginBottom:4} }, p.label),
+        React.createElement('div', { style:{fontWeight:700,fontSize:'0.85rem',marginBottom:2,color:'var(--text)'} }, p.store),
+        React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)',marginBottom:6} }, `📍 ${p.label}`),
         p.price && p.price !== '—' &&
-          React.createElement('div', { style:{fontSize:'0.8rem',color:'var(--primary)',fontWeight:700} }, `${p.price} €`),
-        React.createElement('div', {
-          style:{fontSize:'0.7rem',color:'var(--success)',marginTop:2}
-        }, `Correspondance : ${p.match}%`),
-        p.link && p.link !== '#' && React.createElement('div', {
-          style:{
-            marginTop:6, padding:'3px 8px', background:'var(--primary)', color:'white',
-            borderRadius:6, fontSize:'0.72rem', textAlign:'center', cursor:'pointer'
-          },
-          onClick:()=>window.open(p.link, '_blank', 'noopener,noreferrer')
-        }, "Voir l'offre →")
+          React.createElement('div', { style:{fontSize:'0.88rem',color:'var(--primary)',fontWeight:700,marginBottom:4} }, `${p.price} €`),
+        React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--success)',marginBottom:8} },
+          `Correspondance : ${p.match}%`
+        ),
+        p.link && p.link !== '#' && p.link.startsWith('http') &&
+          React.createElement('a', {
+            href:p.link,
+            target:'_blank',
+            rel:'noopener noreferrer',
+            style:{
+              display:'block', padding:'5px 10px', background:'var(--primary)', color:'white',
+              borderRadius:6, fontSize:'0.75rem', textAlign:'center', textDecoration:'none',
+              fontWeight:600
+            }
+          }, "Voir l'offre →")
       ),
 
       React.createElement('div', {
-        className:'pin-bubble', style:{position:'relative', cursor: p.link !== '#' ? 'pointer' : 'default'},
-        onClick:()=>{ if(p.link && p.link !== '#') window.open(p.link, '_blank', 'noopener,noreferrer'); }
+        className:'pin-bubble', style:{position:'relative', cursor:'pointer'},
       }, `${p.store} · ${p.match}%`),
       React.createElement('div', { className:'pin-dot' })
     )),
@@ -348,12 +434,30 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
     );
   }
 
+  // Description fallback : titre + extensions si desc vide
+  const displayDesc = item.desc && item.desc !== 'Description non disponible.'
+    ? item.desc
+    : item.extensions && item.extensions.length > 0
+      ? item.extensions.join(' · ')
+      : item.title;
+
+  const validLink = item.storeLink && item.storeLink !== '#' && item.storeLink.startsWith('http')
+    ? item.storeLink : null;
+
   return React.createElement('div', { className:'result-item fade-in' },
-    React.createElement('div', { className:'result-img', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
-      item.img
-        ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>e.target.style.display='none' })
-        : React.createElement('span', { className:'img-placeholder' }, '📦')
-    ),
+    // Image cliquable → ouvre l'offre
+    validLink
+      ? React.createElement('a', { href:validLink, target:'_blank', rel:'noopener noreferrer', className:'result-img', style:{cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'} },
+          item.img
+            ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>{ e.target.style.display='none'; } })
+            : React.createElement('span', { className:'img-placeholder' }, '📦')
+        )
+      : React.createElement('div', { className:'result-img', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
+          item.img
+            ? React.createElement('img', { src:item.img, alt:item.title, loading:'lazy', onError:e=>{ e.target.style.display='none'; } })
+            : React.createElement('span', { className:'img-placeholder' }, '📦')
+        ),
+
     React.createElement('div', { className:'result-body', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
       React.createElement('div', { className:'result-meta' },
         React.createElement('div', { className:'result-title' }, item.title),
@@ -364,9 +468,9 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
           }, item.matchReason)
         )
       ),
-      React.createElement('div', { className:'result-desc' }, item.desc),
+      React.createElement('div', { className:'result-desc' }, displayDesc),
       React.createElement('div', { className:'result-footer' },
-        item.price && React.createElement('div', { className:'result-price' },
+        item.price && item.price !== '—' && React.createElement('div', { className:'result-price' },
           `${item.price} €`,
           item.oldPrice && React.createElement('span', { className:'old' }, `${item.oldPrice} €`)
         ),
@@ -379,12 +483,6 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
           React.createElement('span', { className:'result-delivery' }, `⚡ ${item.delivery}`),
         item.badge && React.createElement('span', { className:'new-badge' }, item.badge)
       ),
-      item.extensions && item.extensions.length > 0 &&
-        React.createElement('div', { className:'chip-group', style:{marginTop:6} },
-          item.extensions.slice(0,4).map((ext,i) =>
-            React.createElement('span', { key:i, className:'chip', style:{fontSize:'0.72rem',padding:'2px 8px'} }, ext)
-          )
-        ),
       isExpanded && React.createElement('div', { className:'reviews-section', style:{marginTop:12} },
         React.createElement('div', { className:'reviews-title' }, '💬 Avis clients'),
         item.stars
@@ -396,21 +494,47 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
                 )
               ),
               React.createElement('div', { className:'no-reviews' },
-                `Les avis détaillés sont disponibles directement sur ${item.store}. Cliquez sur "Voir l'offre" pour les consulter.`
+                `Avis complets disponibles sur ${item.store}.`
               )
             )
           : React.createElement('div', { className:'no-reviews' }, 'Avis non disponibles pour cet article.')
       )
     ),
+
     React.createElement('div', { className:'result-actions' },
       React.createElement('button', {
         className:`btn-fav${favs.includes(item.id)?' active':''}`,
-        onClick:e=>{ e.stopPropagation(); toggleFav(item.id); }
+        onClick:e=>{ e.stopPropagation(); toggleFav(item.id); },
+        title:'Ajouter aux favoris'
       }, React.createElement(HeartIcon, { filled:favs.includes(item.id) })),
       React.createElement('button', {
-        className:'btn-visit',
-        onClick:e=>{ e.stopPropagation(); if(item.storeLink && item.storeLink !== '#'){ window.open(item.storeLink, '_blank', 'noopener,noreferrer'); } }
-      }, "Voir l'offre →")
+        className:'btn-icon',
+        title:'Partager',
+        onClick:e=>{
+          e.stopPropagation();
+          const url = item.storeLink || window.location.href;
+          const text = `${item.title} — ${item.price ? item.price + ' €' : ''} sur ${item.store}`;
+          if (navigator.share) {
+            navigator.share({ title: item.title, text, url }).catch(()=>{});
+          } else {
+            navigator.clipboard.writeText(url).then(()=>{ alert('Lien copié !'); });
+          }
+        },
+        style:{width:34,height:34,borderRadius:'99px',background:'var(--dark3)',border:'1px solid var(--border)',color:'var(--text3)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}
+      }, React.createElement(SvgIcon, { d:'M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13' })),
+      validLink
+        ? React.createElement('a', {
+            href:validLink,
+            target:'_blank',
+            rel:'noopener noreferrer',
+            className:'btn-visit',
+            style:{display:'inline-block',textDecoration:'none',textAlign:'center'},
+            onClick:e=>e.stopPropagation()
+          }, "Voir l'offre →")
+        : React.createElement('span', {
+            className:'btn-visit',
+            style:{opacity:0.4,cursor:'not-allowed'}
+          }, "Lien indisponible")
     )
   );
 }
@@ -615,13 +739,44 @@ function UploadModal({ onClose, onSearchWithAnalysis }) {
   );
 }
 
-// ─── PROFILE MODAL ───────────────────────────────────────────────────────────
-function ProfileModal({ onClose }) {
+// ─── PROFILE MODAL ─────────────────────────────────────────────────────────────
+function ProfileModal({ onClose, auth, onSearchFromHistory }) {
   const [tab, setTab] = useState('history');
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [mode, setMode] = useState('login'); // login | signup
   const [form, setForm] = useState({ name:'', email:'', pass:'' });
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  if (!loggedIn) {
+  useEffect(() => {
+    if (auth.isLoggedIn && !profile) {
+      setLoadingProfile(true);
+      authCall('get_profile').then(data => {
+        if (data.success) setProfile(data);
+        setLoadingProfile(false);
+      });
+    }
+  }, [auth.isLoggedIn]);
+
+  async function handleAuth() {
+    setError(null);
+    try {
+      if (mode === 'login') {
+        await auth.login(form.email, form.pass);
+      } else {
+        const res = await auth.signup(form.email, form.pass, form.name);
+        if (res.success) setSuccess('Compte créé ! Vérifiez vos emails pour confirmer.');
+      }
+    } catch(e) { setError(e.message); }
+  }
+
+  const initials = auth.user?.user_metadata?.full_name
+    ? auth.user.user_metadata.full_name.split(' ').map(n=>n[0]).join('').toUpperCase().substring(0,2)
+    : auth.user?.email?.substring(0,2).toUpperCase() || 'JD';
+
+  // ── Non connecté
+  if (!auth.isLoggedIn) {
     return React.createElement('div', { className:'modal-overlay', onClick:onClose },
       React.createElement('div', { className:'modal', onClick:e=>e.stopPropagation() },
         React.createElement('div', { className:'modal-header' },
@@ -631,29 +786,107 @@ function ProfileModal({ onClose }) {
           )
         ),
         React.createElement('div', { className:'modal-body' },
-          React.createElement('div', { className:'ai-banner', style:{marginBottom:20} },
-            React.createElement('div', { className:'ai-banner-head' },
-              React.createElement('div', { className:'ai-banner-title' }, '✨ Espace personnel')
+          // Boutons OAuth
+          React.createElement('div', { style:{display:'flex',flexDirection:'column',gap:8,marginBottom:16} },
+            React.createElement('button', {
+              onClick:()=>auth.loginWithProvider('google'),
+              style:{
+                display:'flex',alignItems:'center',justifyContent:'center',gap:10,
+                width:'100%',padding:'10px',borderRadius:'var(--radius)',
+                background:'white',border:'1px solid #ddd',color:'#333',
+                fontFamily:'var(--font-body)',fontWeight:500,fontSize:'0.88rem',cursor:'pointer'
+              }
+            },
+              React.createElement('svg', { viewBox:'0 0 24 24', width:18, height:18 },
+                React.createElement('path', { fill:'#4285F4', d:'M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z' }),
+                React.createElement('path', { fill:'#34A853', d:'M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z' }),
+                React.createElement('path', { fill:'#FBBC05', d:'M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z' }),
+                React.createElement('path', { fill:'#EA4335', d:'M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z' })
+              ),
+              'Continuer avec Google'
             ),
-            React.createElement('p', null, 'Connectez-vous pour sauvegarder vos recherches, recevoir des recommandations IA et découvrir les nouveautés.')
+            React.createElement('button', {
+              onClick:()=>auth.loginWithProvider('apple'),
+              style:{
+                display:'flex',alignItems:'center',justifyContent:'center',gap:10,
+                width:'100%',padding:'10px',borderRadius:'var(--radius)',
+                background:'#000',border:'1px solid #333',color:'white',
+                fontFamily:'var(--font-body)',fontWeight:500,fontSize:'0.88rem',cursor:'pointer'
+              }
+            },
+              React.createElement('svg', { viewBox:'0 0 24 24', width:18, height:18, fill:'white' },
+                React.createElement('path', { d:'M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z' })
+              ),
+              'Continuer avec Apple'
+            )
           ),
-          ['name','email','pass'].map(k => React.createElement('div', { key:k },
-            React.createElement('div', { className:'input-label' },
-              k==='name'?'Nom complet':k==='email'?'Adresse email':'Mot de passe'),
-            React.createElement('input', {
-              className:'input-field', type:k==='pass'?'password':'text',
-              placeholder:k==='name'?'Jean Dupont':k==='email'?'jean@email.com':'••••••••',
-              value:form[k], onChange:e=>setForm(f=>({...f,[k]:e.target.value}))
+
+          // Séparateur
+          React.createElement('div', { style:{display:'flex',alignItems:'center',gap:10,marginBottom:16} },
+            React.createElement('div', { style:{flex:1,height:1,background:'var(--border)'} }),
+            React.createElement('span', { style:{fontSize:'0.75rem',color:'var(--text3)'} }, 'ou par email'),
+            React.createElement('div', { style:{flex:1,height:1,background:'var(--border)'} })
+          ),
+
+          // Toggle login/signup
+          React.createElement('div', { style:{display:'flex',gap:0,marginBottom:20,background:'var(--dark3)',borderRadius:'var(--radius)',padding:3} },
+            ['login','signup'].map(m => React.createElement('button', {
+              key:m,
+              onClick:()=>{ setMode(m); setError(null); setSuccess(null); },
+              style:{
+                flex:1, padding:'8px', border:'none', borderRadius:'var(--radius)',
+                background: mode===m ? 'var(--primary)' : 'transparent',
+                color: mode===m ? 'white' : 'var(--text2)',
+                fontFamily:'var(--font-head)', fontWeight:700, fontSize:'0.85rem', cursor:'pointer'
+              }
+            }, m==='login' ? 'Se connecter' : 'Créer un compte'))
+          ),
+
+          error && React.createElement('div', { style:{
+            background:'rgba(231,76,60,0.1)',border:'1px solid rgba(231,76,60,0.3)',
+            borderRadius:'var(--radius)',padding:'10px 14px',marginBottom:12,
+            fontSize:'0.82rem',color:'#e74c3c'
+          } }, error),
+
+          success && React.createElement('div', { style:{
+            background:'rgba(46,204,113,0.1)',border:'1px solid rgba(46,204,113,0.3)',
+            borderRadius:'var(--radius)',padding:'10px 14px',marginBottom:12,
+            fontSize:'0.82rem',color:'var(--success)'
+          } }, success),
+
+          mode === 'signup' && React.createElement('div', null,
+            React.createElement('div', { className:'input-label' }, 'Nom complet'),
+            React.createElement('input', { className:'input-field', placeholder:'Jean Dupont',
+              value:form.name, onChange:e=>setForm(f=>({...f,name:e.target.value})) })
+          ),
+          React.createElement('div', null,
+            React.createElement('div', { className:'input-label' }, 'Email'),
+            React.createElement('input', { className:'input-field', type:'email', placeholder:'jean@email.com',
+              value:form.email, onChange:e=>setForm(f=>({...f,email:e.target.value})) })
+          ),
+          React.createElement('div', null,
+            React.createElement('div', { className:'input-label' }, 'Mot de passe'),
+            React.createElement('input', { className:'input-field', type:'password', placeholder:'••••••••',
+              value:form.pass, onChange:e=>setForm(f=>({...f,pass:e.target.value})),
+              onKeyDown:e=>e.key==='Enter'&&handleAuth()
             })
-          )),
-          React.createElement('button', { className:'btn-primary', onClick:()=>setLoggedIn(true) },
-            'Se connecter / Créer un compte'
+          ),
+          React.createElement('button', {
+            className:'btn-primary',
+            onClick:handleAuth,
+            disabled:auth.loading,
+            style:{opacity:auth.loading?0.7:1}
+          }, auth.loading ? '⏳ Connexion…' : mode==='login' ? 'Se connecter' : 'Créer mon compte'),
+
+          React.createElement('div', { style:{textAlign:'center',marginTop:12,fontSize:'0.75rem',color:'var(--text3)'} },
+            '🔒 Vos données sont sécurisées avec Supabase'
           )
         )
       )
     );
   }
 
+  // ── Connecté
   return React.createElement('div', { className:'modal-overlay', onClick:onClose },
     React.createElement('div', { className:'modal', style:{maxWidth:560}, onClick:e=>e.stopPropagation() },
       React.createElement('div', { className:'modal-header' },
@@ -662,68 +895,355 @@ function ProfileModal({ onClose }) {
           React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
         )
       ),
+
+      // Profil hero
       React.createElement('div', { className:'profile-hero' },
         React.createElement('div', { className:'profile-avatar-wrap' },
-          React.createElement('div', { className:'profile-avatar' }, 'JD')
+          React.createElement('div', { className:'profile-avatar' }, initials)
         ),
-        React.createElement('div', { className:'profile-name' }, 'Jean Dupont'),
-        React.createElement('div', { className:'profile-email' }, 'jean.dupont@email.com')
+        React.createElement('div', { className:'profile-name' },
+          auth.user?.user_metadata?.full_name || auth.user?.email?.split('@')[0] || 'Utilisateur'
+        ),
+        React.createElement('div', { className:'profile-email' }, auth.user?.email),
+        React.createElement('button', {
+          onClick:()=>{ auth.logout(); onClose(); },
+          style:{
+            marginTop:10, background:'none', border:'1px solid var(--border)',
+            color:'var(--text3)', fontSize:'0.78rem', padding:'4px 12px',
+            borderRadius:'99px', cursor:'pointer'
+          }
+        }, 'Se déconnecter')
       ),
+
+      // Tabs
       React.createElement('div', { className:'tabs' },
-        [['history','🕐 Historique'],['reco','✨ Recommandations'],['new','🆕 Nouveautés']].map(([id,l]) =>
+        [['history','🕐 Historique'],['favorites','❤️ Favoris'],['reco','✨ Recommandations']].map(([id,l]) =>
           React.createElement('div', { key:id, className:`tab${tab===id?' active':''}`, onClick:()=>setTab(id) }, l)
         )
       ),
-      tab==='history' && React.createElement('div', { style:{maxHeight:320,overflowY:'auto'} },
-        HISTORY_ITEMS.map(h => React.createElement('div', { key:h.id, className:'history-item' },
-          React.createElement('div', { className:'history-thumb' }, h.emoji),
-          React.createElement('div', null,
-            React.createElement('div', { className:'history-query' }, h.query),
-            React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)'} }, '12 résultats trouvés')
-          ),
-          React.createElement('div', { className:'history-date' }, h.date)
-        ))
+
+      // Historique
+      tab==='history' && React.createElement('div', { style:{maxHeight:360,overflowY:'auto'} },
+        loadingProfile
+          ? React.createElement('div', { style:{padding:20,textAlign:'center',color:'var(--text3)'} }, '⏳ Chargement…')
+          : profile?.history?.length > 0
+            ? profile.history.map((h,i) => React.createElement('div', {
+                key:i, className:'history-item',
+                onClick:()=>{ onSearchFromHistory(h.query, h.category); onClose(); }
+              },
+                React.createElement('div', { className:'history-thumb' }, '🔍'),
+                React.createElement('div', null,
+                  React.createElement('div', { className:'history-query' }, h.query),
+                  React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--text3)'} },
+                    `${h.results_count} résultats · ${h.category !== 'all' ? h.category : 'Toutes catégories'}`
+                  )
+                ),
+                React.createElement('div', { className:'history-date' },
+                  new Date(h.created_at).toLocaleDateString('fr-FR', {day:'numeric',month:'short'})
+                )
+              ))
+            : React.createElement('div', { style:{padding:24,textAlign:'center',color:'var(--text3)',fontSize:'0.85rem'} },
+                '🔍 Aucune recherche enregistrée encore.'
+              )
       ),
+
+      // Favoris
+      tab==='favorites' && React.createElement('div', { style:{maxHeight:360,overflowY:'auto'} },
+        loadingProfile
+          ? React.createElement('div', { style:{padding:20,textAlign:'center',color:'var(--text3)'} }, '⏳ Chargement…')
+          : profile?.favorites?.length > 0
+            ? React.createElement('div', { className:'reco-grid', style:{padding:12} },
+                profile.favorites.map((f,i) => React.createElement('div', { key:i, className:'reco-card' },
+                  React.createElement('div', { className:'reco-img' },
+                    f.img
+                      ? React.createElement('img', { src:f.img, alt:f.title, style:{width:'100%',height:'100%',objectFit:'cover'} })
+                      : '📦'
+                  ),
+                  React.createElement('div', { className:'reco-name' }, f.title),
+                  React.createElement('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'center'} },
+                    React.createElement('div', { className:'reco-price' }, f.price ? `${f.price} €` : '—'),
+                    React.createElement('div', { className:getMatchClass(f.match), style:{fontSize:'0.65rem'} }, `${f.match}%`)
+                  ),
+                  f.store_link && React.createElement('a', {
+                    href:f.store_link, target:'_blank', rel:'noopener noreferrer',
+                    style:{display:'block',marginTop:6,fontSize:'0.72rem',color:'var(--primary)',textDecoration:'none',textAlign:'center'}
+                  }, `🏪 ${f.store} →`)
+                ))
+              )
+            : React.createElement('div', { style:{padding:24,textAlign:'center',color:'var(--text3)',fontSize:'0.85rem'} },
+                '❤️ Aucun favori encore. Cliquez sur le ♡ sur un article !'
+              )
+      ),
+
+      // Recommandations IA
       tab==='reco' && React.createElement('div', { style:{padding:16} },
         React.createElement('div', { className:'ai-banner', style:{marginBottom:16} },
           React.createElement('div', { className:'ai-banner-head' },
-            React.createElement('div', { className:'ai-banner-title' }, '🤖 Recommandations IA personnalisées')
+            React.createElement('div', { className:'ai-banner-title' }, '🤖 Recommandations basées sur vos recherches')
           ),
-          React.createElement('p', null, 'Basé sur vos recherches, notre IA a sélectionné ces articles.')
+          React.createElement('p', null,
+            profile?.history?.length > 0
+              ? `Basé sur vos ${profile.history.length} recherches, voici ce qui pourrait vous intéresser.`
+              : 'Faites quelques recherches pour recevoir des recommandations personnalisées.'
+          )
         ),
-        React.createElement('div', { className:'reco-grid' },
-          NEW_ARRIVALS.map(r => React.createElement('div', { key:r.id, className:'reco-card' },
-            React.createElement('div', { className:'reco-img' }, r.emoji),
-            React.createElement('div', { className:'reco-name' }, r.name),
-            React.createElement('div', { className:'reco-price' }, `${r.price} €`),
-            React.createElement('div', { className:'reco-match' }, `Correspondance : ${r.match}%`)
-          ))
-        )
-      ),
-      tab==='new' && React.createElement('div', { style:{padding:16} },
-        React.createElement('div', { style:{display:'flex',alignItems:'center',gap:8,marginBottom:16} },
-          React.createElement('span', { className:'new-badge' }, "Mis à jour aujourd'hui à 03:00 UTC"),
-          React.createElement('span', { style:{fontSize:'0.78rem',color:'var(--text3)'} }, '≥ 80% de correspondance')
-        ),
-        React.createElement('div', { className:'reco-grid' },
-          NEW_ARRIVALS.map(r => React.createElement('div', { key:r.id, className:'reco-card' },
-            React.createElement('div', { className:'reco-img' }, r.emoji),
-            React.createElement('div', { style:{display:'flex',alignItems:'center',gap:4,marginBottom:4} },
-              React.createElement('span', { className:'new-badge' }, 'NEW'),
-              React.createElement('span', { className:'reco-match' }, `${r.match}%`)
-            ),
-            React.createElement('div', { className:'reco-name' }, r.name),
-            React.createElement('div', { className:'reco-price' }, `${r.price} €`)
-          ))
+        profile?.history?.length > 0 && React.createElement('div', { className:'reco-grid' },
+          ['Nouveautés', 'Tendances', 'Meilleures ventes', 'Promos'].map((label,i) =>
+            React.createElement('div', { key:i, className:'reco-card', style:{textAlign:'center',padding:16} },
+              React.createElement('div', { style:{fontSize:'1.5rem',marginBottom:8} },
+                ['✨','📈','🏆','🔥'][i]
+              ),
+              React.createElement('div', { className:'reco-name' }, label),
+              React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--text3)',marginTop:4} },
+                'Basé sur vos recherches'
+              )
+            )
+          )
         )
       )
     )
   );
 }
 
+// ─── PRICE COMPARE MODAL ────────────────────────────────────────────────────
+function PriceCompareModal({ query, onClose }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch(`/.netlify/functions/compare?q=${encodeURIComponent(query)}&country=be`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, [query]);
+
+  return React.createElement('div', { className:'modal-overlay', onClick:onClose },
+    React.createElement('div', { className:'modal', style:{maxWidth:620}, onClick:e=>e.stopPropagation() },
+      React.createElement('div', { className:'modal-header' },
+        React.createElement('div', { className:'modal-title' }, '💰 Comparateur de prix'),
+        React.createElement('button', { className:'modal-close', onClick:onClose },
+          React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
+        )
+      ),
+      React.createElement('div', { style:{padding:16, maxHeight:'70vh', overflowY:'auto'} },
+        loading && React.createElement('div', { className:'loading' },
+          React.createElement('div', { className:'spinner' }),
+          React.createElement('p', null, '🔍 Comparaison des prix en cours…')
+        ),
+        error && React.createElement('div', { style:{color:'var(--primary)',padding:16} }, error),
+        data && React.createElement('div', null,
+          // Stats banner
+          React.createElement('div', { style:{
+            display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:16
+          }},
+            [
+              ['Prix min', `${data.stats.minPrice} €`, 'var(--success)'],
+              ['Prix max', `${data.stats.maxPrice} €`, 'var(--primary)'],
+              ['Moyenne', `${data.stats.avgPrice} €`, 'var(--info)'],
+              ['Économie max', `${data.stats.savings} € (-${data.stats.savingsPct}%)`, 'var(--warning)'],
+            ].map(([label, val, color]) =>
+              React.createElement('div', { key:label, style:{
+                background:'var(--dark3)', border:'1px solid var(--border)',
+                borderRadius:'var(--radius)', padding:'10px 12px', textAlign:'center'
+              }},
+                React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--text3)',marginBottom:4} }, label),
+                React.createElement('div', { style:{fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.88rem',color} }, val)
+              )
+            )
+          ),
+
+          // Recommandation IA
+          data.analysis && React.createElement('div', { className:'ai-banner', style:{marginBottom:16} },
+            React.createElement('div', { className:'ai-banner-head' },
+              React.createElement('div', { className:'ai-banner-title' }, "🤖 Conseil d’achat IA")
+            ),
+            React.createElement('p', null, data.analysis.recommendation),
+            data.analysis.tip && React.createElement('p', { style:{marginTop:6,fontSize:'0.8rem',color:'var(--text3)'} },
+              `💡 ${data.analysis.tip}`
+            )
+          ),
+
+          // Liste des offres
+          React.createElement('div', { style:{display:'flex',flexDirection:'column',gap:8} },
+            data.results.map((r,i) => React.createElement('div', { key:i, style:{
+              display:'flex', alignItems:'center', gap:12,
+              background: i===0 ? 'rgba(46,204,113,0.08)' : 'var(--dark3)',
+              border: `1px solid ${i===0 ? 'rgba(46,204,113,0.3)' : 'var(--border)'}`,
+              borderRadius:'var(--radius)', padding:'10px 12px'
+            }},
+              // Rank
+              React.createElement('div', { style:{
+                width:28, height:28, borderRadius:'99px', flexShrink:0,
+                background: i===0 ? 'var(--success)' : i===1 ? 'var(--warning)' : 'var(--dark2)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontWeight:700, fontSize:'0.78rem', color:'white'
+              }}, i===0 ? '🏆' : `${i+1}`),
+
+              // Image
+              r.img && React.createElement('img', {
+                src:r.img, alt:r.store,
+                style:{width:40,height:40,objectFit:'cover',borderRadius:6,flexShrink:0}
+              }),
+
+              // Infos
+              React.createElement('div', { style:{flex:1,minWidth:0} },
+                React.createElement('div', { style:{
+                  fontSize:'0.82rem',fontWeight:600,color:'var(--text)',
+                  whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'
+                }}, r.title),
+                React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)',marginTop:2} },
+                  `🏪 ${r.store}`,
+                  r.delivery && ` · ⚡ ${r.delivery}`
+                )
+              ),
+
+              // Prix + lien
+              React.createElement('div', { style:{textAlign:'right',flexShrink:0} },
+                React.createElement('div', { style:{
+                  fontFamily:'var(--font-head)',fontWeight:700,
+                  fontSize: i===0 ? '1.1rem' : '0.95rem',
+                  color: i===0 ? 'var(--success)' : 'var(--text)'
+                }}, r.price || '—'),
+                r.storeLink && React.createElement('a', {
+                  href:r.storeLink, target:'_blank', rel:'noopener noreferrer',
+                  style:{
+                    display:'block',marginTop:4,fontSize:'0.72rem',
+                    background:'var(--primary)',color:'white',padding:'3px 8px',
+                    borderRadius:6,textDecoration:'none',textAlign:'center'
+                  }
+                }, "Voir →")
+              )
+            ))
+          )
+        )
+      )
+    )
+  );
+}
+
+// ─── PWA INSTALL BANNER ───────────────────────────────────────────────────────
+function PWAInstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Affiche la bannière après 30s si pas encore installé
+      setTimeout(() => setShow(true), 30000);
+    });
+  }, []);
+
+  if (!show || !deferredPrompt) return null;
+
+  return React.createElement('div', {
+    style:{
+      position:'fixed', bottom:24, left:'50%', transform:'translateX(-50%)',
+      background:'var(--dark2)', border:'1px solid var(--border2)',
+      borderRadius:'var(--radius-lg)', padding:'12px 20px',
+      display:'flex', alignItems:'center', gap:12, zIndex:400,
+      boxShadow:'0 8px 32px rgba(0,0,0,0.4)', maxWidth:380, width:'calc(100% - 32px)'
+    }
+  },
+    React.createElement('span', { style:{fontSize:'1.5rem'} }, '📲'),
+    React.createElement('div', { style:{flex:1} },
+      React.createElement('div', { style:{fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.88rem'} },
+        'Installer Find It'
+      ),
+      React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)'} },
+        "Accès rapide depuis votre écran d'accueil"
+      )
+    ),
+    React.createElement('button', {
+      onClick:()=>{ deferredPrompt.prompt(); setShow(false); },
+      style:{
+        background:'var(--primary)',color:'white',border:'none',
+        fontFamily:'var(--font-head)',fontWeight:700,fontSize:'0.82rem',
+        padding:'7px 14px',borderRadius:'var(--radius)',cursor:'pointer'
+      }
+    }, 'Installer'),
+    React.createElement('button', {
+      onClick:()=>setShow(false),
+      style:{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:4}
+    }, '✕')
+  );
+}
+
+
+// ─── MOBILE BOTTOM NAV ───────────────────────────────────────────────────────
+function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
+  return React.createElement('nav', { className:'mobile-nav' },
+    React.createElement('div', { className:'mobile-nav-items' },
+      // Accueil
+      React.createElement('div', { className:'mobile-nav-item', onClick:()=>window.scrollTo({top:0,behavior:'smooth'}) },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' })
+        ),
+        React.createElement('span', null, 'Accueil')
+      ),
+      // Recherche photo
+      React.createElement('div', { className:'mobile-nav-item', onClick:onUpload },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z' }),
+          React.createElement('circle', { cx:'12', cy:'13', r:'4' })
+        ),
+        React.createElement('span', null, 'Photo IA')
+      ),
+      // Recherche texte (bouton central)
+      React.createElement('div', {
+        className:'mobile-nav-item',
+        style:{ background:'var(--primary)', borderRadius:'16px', color:'white', padding:'8px 20px' },
+        onClick:()=>{ const inp = document.querySelector('.search-input-wrap input, .header-search input'); if(inp){ inp.focus(); window.scrollTo({top:0,behavior:'smooth'}); } }
+      },
+        React.createElement('svg', { viewBox:'0 0 24 24', style:{width:20,height:20} },
+          React.createElement('circle', { cx:'11', cy:'11', r:'8' }),
+          React.createElement('path', { d:'m21 21-4.35-4.35' })
+        ),
+        React.createElement('span', { style:{fontSize:'0.7rem',fontWeight:700} }, 'Chercher')
+      ),
+      // Favoris
+      React.createElement('div', { className:'mobile-nav-item' },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
+        ),
+        React.createElement('span', null, 'Favoris')
+      ),
+      // Profil
+      React.createElement('div', { className:'mobile-nav-item', onClick:onProfile },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2' }),
+          React.createElement('circle', { cx:'12', cy:'7', r:'4' })
+        ),
+        React.createElement('span', null, 'Profil')
+      )
+    )
+  );
+}
+
+// ─── MOBILE FILTER BUTTON + DRAWER ───────────────────────────────────────────
+function MobileFilterDrawer({ filters, setFilters, onClose }) {
+  return React.createElement('div', null,
+    React.createElement('div', { className:'filter-drawer-overlay', style:{display:'block'}, onClick:onClose }),
+    React.createElement('div', { className:'filter-drawer open' },
+      React.createElement('div', { className:'filter-drawer-handle' }),
+      React.createElement('div', { className:'filter-drawer-header' },
+        React.createElement('div', { className:'filter-drawer-title' }, '🎛 Filtres de recherche'),
+        React.createElement('button', { className:'filter-drawer-close', onClick:onClose }, '✕')
+      ),
+      React.createElement(FilterSidebar, { collapsed:false, filters, setFilters })
+    )
+  );
+}
+
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 function App() {
+  const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
+  const [compareQuery, setCompareQuery] = useState('');
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [view, setView] = useState('list');
@@ -794,6 +1314,16 @@ function App() {
       setLoading(false);
       addToast(`✅ ${allResults.length} résultats trouvés pour "${searchQuery}"`);
 
+      // Sauvegarde la recherche si connecté
+      if (auth.isLoggedIn) {
+        authCall('save_search', { data: {
+          query: searchQuery,
+          category: searchCat,
+          results_count: allResults.length,
+          enhanced_query: allResults[0]?.enhancedQuery || ''
+        }});
+      }
+
     } catch (err) {
       clearInterval(msgInterval);
       setLoading(false);
@@ -841,7 +1371,7 @@ function App() {
         React.createElement('input', {
           placeholder:'Recherche rapide…', value:query,
           onChange:e=>setQuery(e.target.value),
-          onKeyDown:e=>e.key==='Enter'&&handleSearch()
+          onKeyDown:e=>{ if(e.key==='Enter') { handleSearch(e.target.value); } }
         })
       ),
       React.createElement('div', { className:'header-actions' },
@@ -851,7 +1381,15 @@ function App() {
         React.createElement('button', { className:'btn-icon', title:'Favoris' },
           React.createElement(SvgIcon, { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
         ),
-        React.createElement('button', { className:'avatar-btn', onClick:()=>setShowProfile(true) }, 'JD')
+        React.createElement('button', {
+          className:'avatar-btn', onClick:()=>setShowProfile(true),
+          title: auth.isLoggedIn ? 'Mon compte' : 'Connexion',
+          style:{ position:'relative' }
+        },
+          auth.isLoggedIn
+            ? (auth.user?.user_metadata?.full_name || auth.user?.email || 'JD').substring(0,2).toUpperCase()
+            : '👤'
+        )
       )
     ),
 
@@ -1015,11 +1553,40 @@ function App() {
       )
     ),
 
+    // ── MOBILE NAV
+    React.createElement(MobileNav, {
+      onUpload:()=>setShowUpload(true),
+      onProfile:()=>setShowProfile(true),
+      searchDone
+    }),
+
+    // ── BOUTON FILTRE MOBILE
+    React.createElement('button', {
+      className:'mobile-filter-btn',
+      onClick:()=>setShowMobileFilters(true),
+      title:'Filtres'
+    }, React.createElement(SvgIcon, { d:'M3 6h18M7 12h10M10 18h4' })),
+
+    // ── DRAWER FILTRES MOBILE
+    showMobileFilters && React.createElement(MobileFilterDrawer, {
+      filters, setFilters,
+      onClose:()=>setShowMobileFilters(false)
+    }),
+
+        showCompare && React.createElement(PriceCompareModal, {
+      query: compareQuery,
+      onClose:()=>setShowCompare(false)
+    }),
+    React.createElement(PWAInstallBanner, null),
     showUpload && React.createElement(UploadModal, {
       onClose:()=>setShowUpload(false),
       onSearchWithAnalysis:handleImageSearch
     }),
-    showProfile && React.createElement(ProfileModal, { onClose:()=>setShowProfile(false) }),
+    showProfile && React.createElement(ProfileModal, {
+      onClose:()=>setShowProfile(false),
+      auth,
+      onSearchFromHistory:(q,cat)=>{ setQuery(q); setActiveCategory(cat||'all'); handleSearch(q, cat||'all'); }
+    }),
     React.createElement(Toast, { toasts })
   );
 }
