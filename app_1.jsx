@@ -1548,7 +1548,12 @@ function App() {
             ),
             React.createElement('button', { className:'btn-camera', onClick:()=>setShowMap(v=>!v) },
               '🗺 ', showMap?'Masquer la carte':'Voir sur la carte'
-            )
+            ),
+            React.createElement('button', {
+              className:'btn-camera',
+              style:{background:'rgba(46,204,113,0.1)',borderColor:'rgba(46,204,113,0.3)',color:'var(--success)'},
+              onClick:()=>{ setCompareQuery(query); setShowCompare(true); }
+            }, '💰 Comparer les prix')
           )
         )
       )
