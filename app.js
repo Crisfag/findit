@@ -408,6 +408,7 @@ function MapPreview({ results }) {
 // ─── RESULT ITEM ─────────────────────────────────────────────────────────────
 function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
   const isExpanded = expanded === item.id;
+  const matchScore = item.match !== undefined && item.match !== null ? item.match : 0;
 
   if (view === 'grid') {
     return React.createElement('div', { className:'result-card fade-in', onClick:()=>onExpand(item.id) },
@@ -419,7 +420,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
       React.createElement('div', { className:'card-body' },
         React.createElement('div', { className:'card-top' },
           React.createElement('div', { className:'card-title' }, item.title),
-          React.createElement('div', { className:getMatchClass(item.match) }, `${item.match}%`)
+          React.createElement('div', { className:getMatchClass(matchScore) }, `${matchScore}%`)
         ),
         item.price && React.createElement('div', { className:'card-price' }, `${item.price} €`),
         React.createElement('div', { className:'card-footer' },
@@ -462,7 +463,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
       React.createElement('div', { className:'result-meta' },
         React.createElement('div', { className:'result-title' }, item.title),
         React.createElement('div', { style:{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0} },
-          React.createElement('div', { className:getMatchClass(item.match) }, `${item.match}%`),
+          React.createElement('div', { className:getMatchClass(matchScore) }, `${matchScore}%`),
           item.matchReason && React.createElement('div', {
             style:{fontSize:'0.65rem',color:'var(--text3)',maxWidth:120,textAlign:'right',lineHeight:1.3}
           }, item.matchReason)
