@@ -1171,10 +1171,77 @@ function PWAInstallBanner() {
   );
 }
 
+
+// ─── MOBILE BOTTOM NAV ───────────────────────────────────────────────────────
+function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
+  return React.createElement('nav', { className:'mobile-nav' },
+    React.createElement('div', { className:'mobile-nav-items' },
+      // Accueil
+      React.createElement('div', { className:'mobile-nav-item', onClick:()=>window.scrollTo({top:0,behavior:'smooth'}) },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' })
+        ),
+        React.createElement('span', null, 'Accueil')
+      ),
+      // Recherche photo
+      React.createElement('div', { className:'mobile-nav-item', onClick:onUpload },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z' }),
+          React.createElement('circle', { cx:'12', cy:'13', r:'4' })
+        ),
+        React.createElement('span', null, 'Photo IA')
+      ),
+      // Recherche texte (bouton central)
+      React.createElement('div', {
+        className:'mobile-nav-item',
+        style:{ background:'var(--primary)', borderRadius:'16px', color:'white', padding:'8px 20px' },
+        onClick:()=>{ const inp = document.querySelector('.search-input-wrap input, .header-search input'); if(inp){ inp.focus(); window.scrollTo({top:0,behavior:'smooth'}); } }
+      },
+        React.createElement('svg', { viewBox:'0 0 24 24', style:{width:20,height:20} },
+          React.createElement('circle', { cx:'11', cy:'11', r:'8' }),
+          React.createElement('path', { d:'m21 21-4.35-4.35' })
+        ),
+        React.createElement('span', { style:{fontSize:'0.7rem',fontWeight:700} }, 'Chercher')
+      ),
+      // Favoris
+      React.createElement('div', { className:'mobile-nav-item' },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
+        ),
+        React.createElement('span', null, 'Favoris')
+      ),
+      // Profil
+      React.createElement('div', { className:'mobile-nav-item', onClick:onProfile },
+        React.createElement('svg', { viewBox:'0 0 24 24' },
+          React.createElement('path', { d:'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2' }),
+          React.createElement('circle', { cx:'12', cy:'7', r:'4' })
+        ),
+        React.createElement('span', null, 'Profil')
+      )
+    )
+  );
+}
+
+// ─── MOBILE FILTER BUTTON + DRAWER ───────────────────────────────────────────
+function MobileFilterDrawer({ filters, setFilters, onClose }) {
+  return React.createElement('div', null,
+    React.createElement('div', { className:'filter-drawer-overlay', style:{display:'block'}, onClick:onClose }),
+    React.createElement('div', { className:'filter-drawer open' },
+      React.createElement('div', { className:'filter-drawer-handle' }),
+      React.createElement('div', { className:'filter-drawer-header' },
+        React.createElement('div', { className:'filter-drawer-title' }, '🎛 Filtres de recherche'),
+        React.createElement('button', { className:'filter-drawer-close', onClick:onClose }, '✕')
+      ),
+      React.createElement(FilterSidebar, { collapsed:false, filters, setFilters })
+    )
+  );
+}
+
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 function App() {
   const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
   const [compareQuery, setCompareQuery] = useState('');
   const [query, setQuery] = useState('');
@@ -1486,7 +1553,27 @@ function App() {
       )
     ),
 
-    showCompare && React.createElement(PriceCompareModal, {
+    // ── MOBILE NAV
+    React.createElement(MobileNav, {
+      onUpload:()=>setShowUpload(true),
+      onProfile:()=>setShowProfile(true),
+      searchDone
+    }),
+
+    // ── BOUTON FILTRE MOBILE
+    React.createElement('button', {
+      className:'mobile-filter-btn',
+      onClick:()=>setShowMobileFilters(true),
+      title:'Filtres'
+    }, React.createElement(SvgIcon, { d:'M3 6h18M7 12h10M10 18h4' })),
+
+    // ── DRAWER FILTRES MOBILE
+    showMobileFilters && React.createElement(MobileFilterDrawer, {
+      filters, setFilters,
+      onClose:()=>setShowMobileFilters(false)
+    }),
+
+        showCompare && React.createElement(PriceCompareModal, {
       query: compareQuery,
       onClose:()=>setShowCompare(false)
     }),
