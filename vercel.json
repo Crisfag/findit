@@ -1,13 +1,8 @@
 {
-  "functions": {
-    "netlify/functions/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
-    { "source": "/.netlify/functions/search", "destination": "/netlify/functions/search" },
-    { "source": "/.netlify/functions/analyze-image", "destination": "/netlify/functions/analyze-image" },
-    { "source": "/.netlify/functions/auth", "destination": "/netlify/functions/auth" },
-    { "source": "/.netlify/functions/compare", "destination": "/netlify/functions/compare" }
+    { "source": "/.netlify/functions/search", "destination": "/api/search" },
+    { "source": "/.netlify/functions/analyze-image", "destination": "/api/analyze-image" },
+    { "source": "/.netlify/functions/auth", "destination": "/api/auth" },
+    { "source": "/.netlify/functions/compare", "destination": "/api/compare" }
   ]
 }
