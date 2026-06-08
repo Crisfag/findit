@@ -1,28 +1,61 @@
 {
   "name": "Find It — Recherche mondiale",
   "short_name": "Find It",
-  "description": "Trouvez n'importe quel article dans le monde entier",
+  "description": "Trouvez n'importe quel article dans le monde entier — par texte ou par photo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F0F0F",
   "theme_color": "#FF4B2B",
   "orientation": "portrait-primary",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23FF4B2B'/><text y='130' x='96' text-anchor='middle' font-size='120' font-family='Arial'>🛍</text></svg>",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23FF4B2B'/><text y='360' x='256' text-anchor='middle' font-size='320' font-family='Arial'>🛍</text></svg>",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [],
-  "categories": ["shopping", "lifestyle"],
-  "lang": "fr",
-  "dir": "ltr"
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Find It sur mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Recherche par photo",
+      "short_name": "Photo",
+      "description": "Rechercher par photo avec IA",
+      "url": "/?action=photo",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Mes favoris",
+      "short_name": "Favoris",
+      "description": "Voir mes articles favoris",
+      "url": "/?action=favorites",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "q",
+      "url": "url"
+    }
+  }
 }
