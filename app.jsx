@@ -1507,7 +1507,7 @@ function App() {
   const [displayCount, setDisplayCount] = useState(20); // Résultats visibles initialement
   const [filters, setFilters] = useState({
     priceMin:0, priceMax:2000, delivery:[], colors:[],
-    sizes:[], materials:[], storeType:[], minMatch:50, minRating:0
+    sizes:[], materials:[], storeType:[], minMatch:30, minRating:0
   });
 
   function addToast(msg, type='success') {
