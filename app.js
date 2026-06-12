@@ -204,6 +204,7 @@ function Logo() {
 
 // ─── FILTER SIDEBAR ──────────────────────────────────────────────────────────
 function FilterSidebar({ collapsed, filters, setFilters }) {
+  const t = window.__t || ((k) => k);
   function toggle(key, val) {
     setFilters(f => ({
       ...f,
@@ -329,6 +330,7 @@ function getStorePosition(storeName) {
 }
 
 function MapPreview({ results }) {
+  const t = window.__t || ((k) => k);
   const [hoveredPin, setHoveredPin] = useState(null);
 
   // Construit les pins à partir des vrais résultats
@@ -420,6 +422,7 @@ function MapPreview({ results }) {
 
 // ─── RESULT ITEM ─────────────────────────────────────────────────────────────
 function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
+  const t = window.__t || ((k) => k);
   const isExpanded = expanded === item.id;
   const matchScore = item.match !== undefined && item.match !== null ? item.match : 0;
 
@@ -558,6 +561,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
 
 // ─── UPLOAD MODAL avec IA Vision ─────────────────────────────────────────────
 function UploadModal({ onClose, onSearchWithAnalysis, mode }) {
+  const t = window.__t || ((k) => k);
   const [preview, setPreview] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
   const [mediaType, setMediaType] = useState('image/jpeg');
@@ -776,6 +780,7 @@ function UploadModal({ onClose, onSearchWithAnalysis, mode }) {
 
 // ─── PROFILE MODAL ─────────────────────────────────────────────────────────────
 function ProfileModal({ onClose, auth, onSearchFromHistory }) {
+  const t = window.__t || ((k) => k);
   const [tab, setTab] = useState('history');
   const [mode, setMode] = useState('login'); // login | signup
   const [form, setForm] = useState({ name:'', email:'', pass:'' });
@@ -1028,6 +1033,7 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
 
 // ─── PRICE COMPARE MODAL ────────────────────────────────────────────────────
 function PriceCompareModal({ query, onClose }) {
+  const t = window.__t || ((k) => k);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -1195,6 +1201,7 @@ function PWAInstallBanner() {
 
 // ─── MOBILE BOTTOM NAV ───────────────────────────────────────────────────────
 function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
+  const t = window.__t || ((k) => k);
   return React.createElement('nav', { className:'mobile-nav' },
     React.createElement('div', { className:'mobile-nav-items' },
       // Accueil
@@ -1245,6 +1252,7 @@ function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
 
 // ─── MOBILE FILTER BUTTON + DRAWER ───────────────────────────────────────────
 function MobileFilterDrawer({ filters, setFilters, onClose }) {
+  const t = window.__t || ((k) => k);
   return React.createElement('div', null,
     React.createElement('div', { className:'filter-drawer-overlay', style:{display:'block'}, onClick:onClose }),
     React.createElement('div', { className:'filter-drawer open' },
@@ -1261,6 +1269,7 @@ function MobileFilterDrawer({ filters, setFilters, onClose }) {
 
 // ─── SÉLECTEUR DE LANGUE ────────────────────────────────────────────────────
 function LangSelector({ lang, setLang, LANGUAGES }) {
+  const t = window.__t || ((k) => k);
   const [open, setOpen] = useState(false);
   const current = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
@@ -1310,6 +1319,8 @@ function LangSelector({ lang, setLang, LANGUAGES }) {
 function App() {
   const auth = useAuth();
   const { t, lang, setLang, LANGUAGES } = useTranslation();
+  // Expose t globalement pour les sous-composants sans prop drilling
+  window.__t = t;
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
