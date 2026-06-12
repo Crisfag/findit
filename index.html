@@ -29,7 +29,19 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script type="text/babel" src="app.js"></script>
+  <script src="i18n.js"></script>
+  <script type="text/babel" src="app.jsx?v=1780595909"></script>
+  <script>
+    // Fix Vercel: si app.jsx échoue, charge app.js
+    window.addEventListener('error', function(e) {
+      if (e.message && e.message.includes('app.jsx')) {
+        var s = document.createElement('script');
+        s.type = 'text/babel';
+        s.src = 'app.js';
+        document.head.appendChild(s);
+      }
+    });
+  </script>
   <script>
     // Enregistrement Service Worker PWA
     if ('serviceWorker' in navigator) {
