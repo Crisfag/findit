@@ -48,6 +48,19 @@ const NEW_ARRIVALS = [
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const { useState, useEffect, useRef, useCallback } = React;
 
+// ─── Hook i18n ─────────────────────────────────────────────────────────────
+function useTranslation() {
+  const [lang, setLangState] = useState(() => {
+    const saved = localStorage.getItem('findit_lang');
+    if (saved && TRANSLATIONS[saved]) return saved;
+    const nav = (navigator.language || 'fr').split('-')[0].toLowerCase();
+    return TRANSLATIONS[nav] ? nav : 'fr';
+  });
+  const setLang = (l) => { localStorage.setItem('findit_lang', l); setLangState(l); };
+  const t = (key, ...args) => getTranslation(lang, key, ...args);
+  return { t, lang, setLang, LANGUAGES };
+}
+
 // ─── AUTH HELPERS ────────────────────────────────────────────
 async function authCall(action, payload = {}) {
   const session = JSON.parse(localStorage.getItem('findit_session') || 'null');
