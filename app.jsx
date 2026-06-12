@@ -305,120 +305,243 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
 // ─── MAP PREVIEW ─────────────────────────────────────────────────────────────
 // Coordonnées normalisées (0-100%) pour la carte stylisée
 const STORE_POSITIONS = {
-  'amazon':     { top:'28%', left:'48%', country:'Global' },
-  'zalando':    { top:'25%', left:'52%', country:'Berlin' },
-  'asos':       { top:'20%', left:'42%', country:'Londres' },
-  'fnac':       { top:'32%', left:'46%', country:'Paris' },
-  'cdiscount':  { top:'33%', left:'45%', country:'Paris' },
-  'ikea':       { top:'26%', left:'51%', country:'Stockholm' },
-  'décathlon':  { top:'30%', left:'44%', country:'Bruxelles' },
-  'decathlon':  { top:'30%', left:'44%', country:'Bruxelles' },
-  'etsy':       { top:'35%', left:'30%', country:'New York' },
-  'ebay':       { top:'30%', left:'28%', country:'San José' },
-  'h&m':        { top:'22%', left:'50%', country:'Stockholm' },
-  'shein':      { top:'40%', left:'72%', country:'Guangzhou' },
-  'aliexpress': { top:'38%', left:'75%', country:'Hangzhou' },
-  'mango':      { top:'35%', left:'44%', country:'Barcelone' },
-  'zara':       { top:'35%', left:'43%', country:'A Coruña' },
-  'bershka':    { top:'35%', left:'43%', country:'Barcelone' },
+  // Europe
+  'amazon':       { lat:52.5200, lng:13.4050, city:'Berlin', country:'Allemagne', flag:'🇩🇪' },
+  'zalando':      { lat:52.5200, lng:13.4050, city:'Berlin', country:'Allemagne', flag:'🇩🇪' },
+  'asos':         { lat:51.5074, lng:-0.1278, city:'Londres', country:'Royaume-Uni', flag:'🇬🇧' },
+  'fnac':         { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'cdiscount':    { lat:44.8378, lng:-0.5792, city:'Bordeaux', country:'France', flag:'🇫🇷' },
+  'ikea':         { lat:59.3293, lng:18.0686, city:'Stockholm', country:'Suède', flag:'🇸🇪' },
+  'décathlon':    { lat:50.8503, lng:4.3517,  city:'Bruxelles', country:'Belgique', flag:'🇧🇪' },
+  'decathlon':    { lat:50.8503, lng:4.3517,  city:'Bruxelles', country:'Belgique', flag:'🇧🇪' },
+  'bol':          { lat:51.9225, lng:4.4792,  city:'Rotterdam', country:'Pays-Bas', flag:'🇳🇱' },
+  'mango':        { lat:41.3851, lng:2.1734,  city:'Barcelone', country:'Espagne', flag:'🇪🇸' },
+  'zara':         { lat:43.3623, lng:-8.4115, city:'A Coruña', country:'Espagne', flag:'🇪🇸' },
+  'bershka':      { lat:43.3623, lng:-8.4115, city:'A Coruña', country:'Espagne', flag:'🇪🇸' },
+  'snipes':       { lat:51.2217, lng:6.7762,  city:'Düsseldorf', country:'Allemagne', flag:'🇩🇪' },
+  'nike':         { lat:45.5231, lng:-122.6765, city:'Portland', country:'USA', flag:'🇺🇸' },
+  'adidas':       { lat:49.5733, lng:11.0257, city:'Herzogenaurach', country:'Allemagne', flag:'🇩🇪' },
+  'hm':           { lat:59.3293, lng:18.0686, city:'Stockholm', country:'Suède', flag:'🇸🇪' },
+  'h&m':          { lat:59.3293, lng:18.0686, city:'Stockholm', country:'Suède', flag:'🇸🇪' },
+  'laredoute':    { lat:50.6292, lng:3.0573,  city:'Roubaix', country:'France', flag:'🇫🇷' },
+  'kiabi':        { lat:50.6292, lng:3.0573,  city:'Roubaix', country:'France', flag:'🇫🇷' },
+  'veepee':       { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'vinted':       { lat:54.6872, lng:25.2797, city:'Vilnius', country:'Lituanie', flag:'🇱🇹' },
+  'showroomprive': { lat:48.8566, lng:2.3522, city:'Paris', country:'France', flag:'🇫🇷' },
+  'galerieslafayette': { lat:48.8728, lng:2.3323, city:'Paris', country:'France', flag:'🇫🇷' },
+  'printemps':    { lat:48.8756, lng:2.3266, city:'Paris', country:'France', flag:'🇫🇷' },
+  'courir':       { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'footlocker':   { lat:40.7128, lng:-74.0060, city:'New York', country:'USA', flag:'🇺🇸' },
+  'footkorner':   { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'intersport':   { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'sport2000':    { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'darty':        { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'boulanger':    { lat:50.6292, lng:3.0573,  city:'Lille', country:'France', flag:'🇫🇷' },
+  'ldlc':         { lat:45.7676, lng:4.8344,  city:'Lyon', country:'France', flag:'🇫🇷' },
+  'rue':          { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'hommeprive':   { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'cuir':         { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'unisportstore': { lat:55.6761, lng:12.5683, city:'Copenhague', country:'Danemark', flag:'🇩🇰' },
+  'streetshoes':  { lat:52.3676, lng:4.9041,  city:'Amsterdam', country:'Pays-Bas', flag:'🇳🇱' },
+  'vera':         { lat:41.9028, lng:12.4964, city:'Rome', country:'Italie', flag:'🇮🇹' },
+  'gusti':        { lat:48.1351, lng:11.5820, city:'Munich', country:'Allemagne', flag:'🇩🇪' },
+  'maison':       { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'leclerc':      { lat:47.3333, lng:-1.7833, city:'Nantes', country:'France', flag:'🇫🇷' },
+  'carrefour':    { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  // USA
+  'etsy':         { lat:40.6892, lng:-74.0445, city:'New York', country:'USA', flag:'🇺🇸' },
+  'ebay':         { lat:37.3861, lng:-122.0839, city:'San José', country:'USA', flag:'🇺🇸' },
+  'walmart':      { lat:36.3728, lng:-94.2088, city:'Bentonville', country:'USA', flag:'🇺🇸' },
+  'target':       { lat:44.9778, lng:-93.2650, city:'Minneapolis', country:'USA', flag:'🇺🇸' },
+  'bestbuy':      { lat:44.9778, lng:-93.2650, city:'Minneapolis', country:'USA', flag:'🇺🇸' },
+  // Asie
+  'shein':        { lat:23.1291, lng:113.2644, city:'Guangzhou', country:'Chine', flag:'🇨🇳' },
+  'aliexpress':   { lat:30.2741, lng:120.1551, city:'Hangzhou', country:'Chine', flag:'🇨🇳' },
+  'wish':         { lat:37.3861, lng:-122.0839, city:'San Francisco', country:'USA', flag:'🇺🇸' },
+  'banggood':     { lat:23.1291, lng:113.2644, city:'Guangzhou', country:'Chine', flag:'🇨🇳' },
+  // Par pays/domaine Amazon
+  'amazon.fr':    { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷' },
+  'amazon.be':    { lat:50.8503, lng:4.3517,  city:'Bruxelles', country:'Belgique', flag:'🇧🇪' },
+  'amazon.de':    { lat:52.5200, lng:13.4050, city:'Berlin', country:'Allemagne', flag:'🇩🇪' },
+  'amazon.co.uk': { lat:51.5074, lng:-0.1278, city:'Londres', country:'Royaume-Uni', flag:'🇬🇧' },
+  'amazon.com':   { lat:47.6062, lng:-122.3321, city:'Seattle', country:'USA', flag:'🇺🇸' },
+  'amazon':       { lat:47.6062, lng:-122.3321, city:'Seattle', country:'USA', flag:'🇺🇸' },
 };
 
 function getStorePosition(storeName) {
   if (!storeName) return null;
-  const key = storeName.toLowerCase().split(' ')[0].replace('.com','').replace('.fr','').replace('.be','');
-  return STORE_POSITIONS[key] || null;
+  const name = storeName.toLowerCase();
+  // Essai direct
+  for (const [key, val] of Object.entries(STORE_POSITIONS)) {
+    if (name.includes(key)) return val;
+  }
+  // Fallback : extrait domaine
+  const domain = name.replace(/https?:\/\//,'').split('/')[0];
+  const base = domain.split('.')[0];
+  return STORE_POSITIONS[base] || null;
 }
 
 function MapPreview({ results }) {
   const t = window.__t || ((k) => k);
-  const [hoveredPin, setHoveredPin] = useState(null);
+  const mapRef = useRef(null);
+  const leafletMapRef = useRef(null);
+  const markersRef = useRef([]);
+  const [mapReady, setMapReady] = useState(false);
 
-  // Construit les pins à partir des vrais résultats
+  // Construit les pins depuis les résultats
   const pins = [];
   const seenStores = new Set();
-
   (results || []).forEach(item => {
     if (!item.store) return;
-    const storeKey = item.store.toLowerCase().split(' ')[0];
-    if (seenStores.has(storeKey)) return;
     const pos = getStorePosition(item.store);
     if (!pos) return;
+    const storeKey = item.store.toLowerCase().split(' ')[0];
+    if (seenStores.has(storeKey)) return;
     seenStores.add(storeKey);
-    pins.push({
-      ...pos,
-      label: pos.country,
-      store: item.store,
-      match: item.match,
-      price: item.price,
-      link: item.storeLink,
-      img: item.img,
-    });
+    pins.push({ ...pos, store: item.store, match: item.match, price: item.price, link: item.storeLink, img: item.img });
   });
 
-  // Si pas de résultats, affiche des pins par défaut
-  const displayPins = pins.length > 0 ? pins.slice(0, 8) : [
-    { top:'30%', left:'44%', label:'Bruxelles', store:'Local', match:97, price:'—', link:'#' },
-    { top:'32%', left:'46%', label:'Paris', store:'France', match:88, price:'—', link:'#' },
-    { top:'20%', left:'42%', label:'Londres', store:'UK', match:82, price:'—', link:'#' },
+  // Pins par défaut si pas de résultats
+  const displayPins = pins.length > 0 ? pins.slice(0, 15) : [
+    { lat:50.8503, lng:4.3517,  city:'Bruxelles', country:'Belgique', flag:'🇧🇪', store:'Find It', match:100, price:'—' },
+    { lat:48.8566, lng:2.3522,  city:'Paris', country:'France', flag:'🇫🇷', store:'Marché mondial', match:95, price:'—' },
+    { lat:51.5074, lng:-0.1278, city:'Londres', country:'UK', flag:'🇬🇧', store:'Global', match:90, price:'—' },
+    { lat:52.5200, lng:13.4050, city:'Berlin', country:'Allemagne', flag:'🇩🇪', store:'Global', match:85, price:'—' },
+    { lat:40.7128, lng:-74.006, city:'New York', country:'USA', flag:'🇺🇸', store:'Global', match:80, price:'—' },
   ];
 
-  return React.createElement('div', { className:'map-preview' },
-    React.createElement('div', { className:'map-bg' }),
-    React.createElement('div', { className:'map-grid' }),
-
-    displayPins.map((p,i) => React.createElement('div', {
-      key:i, className:'map-pin', style:{ top:p.top, left:p.left },
-      onMouseEnter:()=>setHoveredPin(i),
-      onMouseLeave:()=>setHoveredPin(null),
-    },
-      // Tooltip au survol
-      hoveredPin === i && React.createElement('div', {
-        style:{
-          position:'absolute', bottom:'calc(100% + 8px)', left:'50%',
-          transform:'translateX(-50%)',
-          background:'var(--dark2)', border:'1px solid var(--border2)',
-          borderRadius:'var(--radius)', padding:'10px 14px',
-          minWidth:180, zIndex:20, pointerEvents:'auto',
-          boxShadow:'0 4px 20px rgba(0,0,0,0.5)',
+  useEffect(() => {
+    // Charge Leaflet dynamiquement si pas encore chargé
+    const loadLeaflet = async () => {
+      if (!window.L) {
+        // CSS Leaflet
+        if (!document.getElementById('leaflet-css')) {
+          const link = document.createElement('link');
+          link.id = 'leaflet-css';
+          link.rel = 'stylesheet';
+          link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+          document.head.appendChild(link);
         }
-      },
-        p.img && React.createElement('img', {
-          src:p.img, alt:p.store,
-          style:{width:'100%',height:70,objectFit:'cover',borderRadius:6,marginBottom:8,display:'block'}
-        }),
-        React.createElement('div', { style:{fontWeight:700,fontSize:'0.85rem',marginBottom:2,color:'var(--text)'} }, p.store),
-        React.createElement('div', { style:{fontSize:'0.75rem',color:'var(--text3)',marginBottom:6} }, `📍 ${p.label}`),
-        p.price && p.price !== '—' &&
-          React.createElement('div', { style:{fontSize:'0.88rem',color:'var(--primary)',fontWeight:700,marginBottom:4} }, `${p.price} €`),
-        React.createElement('div', { style:{fontSize:'0.72rem',color:'var(--success)',marginBottom:8} },
-          `Correspondance : ${p.match}%`
-        ),
-        p.link && p.link !== '#' && p.link.startsWith('http') &&
-          React.createElement('a', {
-            href:p.link,
-            target:'_blank',
-            rel:'noopener noreferrer',
-            style:{
-              display:'block', padding:'5px 10px', background:'var(--primary)', color:'white',
-              borderRadius:6, fontSize:'0.75rem', textAlign:'center', textDecoration:'none',
-              fontWeight:600
-            }
-          }, t('seeOffer'))
-      ),
+        // JS Leaflet
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+      setMapReady(true);
+    };
+    loadLeaflet();
+  }, []);
 
-      React.createElement('div', {
-        className:'pin-bubble', style:{position:'relative', cursor:'pointer'},
-      }, `${p.store} · ${p.match}%`),
-      React.createElement('div', { className:'pin-dot' })
-    )),
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !window.L) return;
 
-    React.createElement('div', { className:'map-label' },
+    // Initialise la carte si pas encore fait
+    if (!leafletMapRef.current) {
+      const map = window.L.map(mapRef.current, {
+        center: [30, 10],
+        zoom: 2,
+        zoomControl: true,
+        attributionControl: true,
+        minZoom: 1,
+        maxZoom: 18,
+      });
+
+      // Tuiles sombres style Google Earth
+      window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      }).addTo(map);
+
+      leafletMapRef.current = map;
+    }
+
+    const L = window.L;
+    const map = leafletMapRef.current;
+
+    // Supprime les anciens markers
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
+
+    // Ajoute les markers
+    displayPins.forEach((pin, i) => {
+      const color = pin.match >= 80 ? '#7C3AED' : pin.match >= 60 ? '#06B6D4' : '#A78BFA';
+      const size = pin.match >= 80 ? 14 : 11;
+
+      const icon = L.divIcon({
+        className: '',
+        html: '<div style="width:' + size + 'px;height:' + size + 'px;background:' + color + ';border:2.5px solid rgba(255,255,255,0.9);border-radius:50%;box-shadow:0 0 0 3px ' + color + '44,0 2px 8px rgba(0,0,0,0.6);cursor:pointer;transition:transform 0.15s;position:relative;" onmouseover="this.style.transform=\'scale(1.5)\'" onmouseout="this.style.transform=\'scale(1)\'"></div>',
+        iconSize: [size, size],
+        iconAnchor: [size/2, size/2],
+      });
+
+      const imgHtml = pin.img ? '<img src="' + pin.img + '" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;">' : '';
+      const priceHtml = (pin.price && pin.price !== '—') ? '<div style="font-weight:700;font-size:0.95rem;color:#A78BFA;margin-bottom:4px">' + pin.price + '</div>' : '';
+      const linkHtml = (pin.link && pin.link.startsWith('http')) ? '<a href="' + pin.link + '" target="_blank" rel="noopener" style="display:block;padding:6px;background:#7C3AED;color:white;border-radius:7px;font-size:0.78rem;text-align:center;text-decoration:none;font-weight:600;">Voir l’offre →</a>' : '';
+      const popupHtml = '<div style="font-family:DM Sans,sans-serif;padding:2px">' + imgHtml + '<div style="font-weight:700;font-size:0.88rem;color:#EEEEF2;margin-bottom:4px">' + (pin.flag || '🏪') + ' ' + pin.store + '</div><div style="font-size:0.76rem;color:#9898A8;margin-bottom:6px">📍 ' + pin.city + ', ' + pin.country + '</div>' + priceHtml + '<div style="font-size:0.75rem;margin-bottom:8px"><span style="background:rgba(124,58,237,0.2);color:#A78BFA;padding:2px 8px;border-radius:99px;font-weight:600">' + pin.match + '% match</span></div>' + linkHtml + '</div>';
+      const popup = L.popup({ className: 'findit-popup', maxWidth: 220, offset: [0, -6] }).setContent(popupHtml);
+
+      const marker = L.marker([pin.lat, pin.lng], { icon }).bindPopup(popup).addTo(map);
+      markersRef.current.push(marker);
+    });
+
+    // Centre la carte sur les markers si résultats réels
+    if (displayPins.length > 0 && pins.length > 0) {
+      const lats = displayPins.map(p => p.lat);
+      const lngs = displayPins.map(p => p.lng);
+      const bounds = L.latLngBounds(
+        [Math.min(...lats) - 5, Math.min(...lngs) - 10],
+        [Math.max(...lats) + 5, Math.max(...lngs) + 10]
+      );
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 8 });
+    }
+
+    // Invalidate size pour éviter les tuiles grises
+    setTimeout(() => map.invalidateSize(), 100);
+
+  }, [mapReady, results]);
+
+  // Nettoie la carte si le composant est démonté
+  useEffect(() => {
+    return () => {
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+      }
+    };
+  }, []);
+
+  return React.createElement('div', {
+    style: { position:'relative', borderRadius:'var(--radius-lg)', overflow:'hidden', border:'1px solid var(--border2)', marginBottom:20 }
+  },
+    // Conteneur carte
+    React.createElement('div', {
+      ref: mapRef,
+      style: { height:420, width:'100%', background:'#111118' }
+    }),
+    // Légende
+    React.createElement('div', {
+      style: {
+        position:'absolute', bottom:10, left:10, zIndex:1000,
+        background:'rgba(17,17,24,0.85)', backdropFilter:'blur(8px)',
+        border:'1px solid var(--border2)', borderRadius:'var(--radius)',
+        padding:'7px 12px', fontSize:'0.76rem', color:'var(--text2)',
+        display:'flex', alignItems:'center', gap:8, pointerEvents:'none'
+      }
+    },
+      React.createElement('span', { style:{width:10,height:10,borderRadius:'50%',background:'#7C3AED',display:'inline-block',boxShadow:'0 0 6px #7C3AED88'} }),
       pins.length > 0
-        ? `🗺 ${pins.length} marchand${pins.length>1?'s':''} localisé${pins.length>1?'s':''} — survolez pour les détails`
-        : '🗺 Vue mondiale — lancez une recherche pour localiser les marchands'
+        ? (pins.length + ' marchand' + (pins.length>1?'s':'') + ' localisé' + (pins.length>1?'s':'') + ' — cliquez sur un point')
+        : 'Lancez une recherche pour localiser les marchands'
     )
   );
 }
+
+
 
 // ─── RESULT ITEM ─────────────────────────────────────────────────────────────
 function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
