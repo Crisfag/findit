@@ -605,6 +605,12 @@ function UploadModal({ onClose, onSearchWithAnalysis, mode }) {
       category: analysis.category || 'all',
       description: analysis.description,
       productName: analysis.productName,
+      visualCriteria: analysis.visualCriteria || [],
+      colors: analysis.colors || [],
+      material: analysis.material || null,
+      shape: analysis.shape || null,
+      pattern: analysis.pattern || null,
+      distinctiveFeatures: analysis.distinctiveFeatures || [],
     });
     onClose();
   }
@@ -1273,7 +1279,7 @@ function App() {
     setTimeout(() => setToasts(t => t.filter(x=>x.id!==id)), 3500);
   }
 
-  async function handleSearch(q, cat) {
+  async function handleSearch(q, cat, visualCriteria) {
     const searchQuery = (q || query).trim();
     if (!searchQuery) return;
     const searchCat = cat || activeCategory;
@@ -1303,6 +1309,10 @@ function App() {
         country: 'be',
         lang: 'fr',
       });
+      // Si des critères visuels sont disponibles (recherche par image), les transmet
+      if (visualCriteria && visualCriteria.length > 0) {
+        params.set('visual_criteria', JSON.stringify(visualCriteria));
+      }
 
       const res = await fetch(`/.netlify/functions/search?${params.toString()}`);
       const data = await res.json();
@@ -1335,12 +1345,12 @@ function App() {
   }
 
   // Appelé depuis UploadModal après analyse IA
-  function handleImageSearch({ query: q, category, description, productName }) {
+  function handleImageSearch({ query: q, category, description, productName, visualCriteria, colors, material, shape, pattern, distinctiveFeatures }) {
     setQuery(q);
     setActiveCategory(category || 'all');
-    setImageAnalysis({ query:q, productName, description });
-    addToast(`🤖 IA a identifié : "${productName}"`);
-    handleSearch(q, category || 'all');
+    setImageAnalysis({ query:q, productName, description, visualCriteria, colors, material, shape, pattern });
+    addToast(`🤖 IA a identifié : "${productName}" — ${(visualCriteria||[]).length} critères visuels détectés`);
+    handleSearch(q, category || 'all', visualCriteria || []);
   }
 
   function toggleFav(id) {
@@ -1455,7 +1465,36 @@ function App() {
               `🤖 IA a identifié : "${imageAnalysis.productName}"`
             )
           ),
-          React.createElement('p', null, imageAnalysis.description)
+          React.createElement('p', { style:{marginBottom:8} }, imageAnalysis.description),
+          // Attributs visuels détectés
+          (imageAnalysis.colors?.length || imageAnalysis.material || imageAnalysis.shape) &&
+            React.createElement('div', { style:{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8} },
+              imageAnalysis.colors?.map((c,i) => React.createElement('span', {
+                key:i, style:{background:'rgba(255,75,43,0.12)',border:'1px solid rgba(255,75,43,0.3)',
+                color:'var(--primary)',fontSize:'0.72rem',padding:'2px 8px',borderRadius:'99px'}
+              }, '🎨 ' + c)),
+              imageAnalysis.material && React.createElement('span', {
+                style:{background:'rgba(52,152,219,0.12)',border:'1px solid rgba(52,152,219,0.3)',
+                color:'#3498db',fontSize:'0.72rem',padding:'2px 8px',borderRadius:'99px'}
+              }, '🧵 ' + imageAnalysis.material),
+              imageAnalysis.shape && React.createElement('span', {
+                style:{background:'rgba(46,204,113,0.12)',border:'1px solid rgba(46,204,113,0.3)',
+                color:'var(--success)',fontSize:'0.72rem',padding:'2px 8px',borderRadius:'99px'}
+              }, '📐 ' + imageAnalysis.shape),
+              imageAnalysis.pattern && imageAnalysis.pattern !== 'uni' && React.createElement('span', {
+                style:{background:'rgba(155,89,182,0.12)',border:'1px solid rgba(155,89,182,0.3)',
+                color:'#9b59b6',fontSize:'0.72rem',padding:'2px 8px',borderRadius:'99px'}
+              }, '🔷 ' + imageAnalysis.pattern)
+            ),
+          // Critères visuels transmis à la recherche
+          imageAnalysis.visualCriteria?.length > 0 &&
+            React.createElement('div', { style:{display:'flex',flexWrap:'nowrap',gap:5,overflowX:'auto',paddingBottom:2} },
+              imageAnalysis.visualCriteria.slice(0,6).map((crit,i) => React.createElement('span', {
+                key:i, style:{background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',
+                color:'var(--text2)',fontSize:'0.68rem',padding:'2px 8px',borderRadius:'99px',
+                whiteSpace:'nowrap',flexShrink:0}
+              }, '✓ ' + crit))
+            )
         ),
 
         searchDone && results.length > 0 && results[0].enhancedQuery && results[0].enhancedQuery !== query &&
