@@ -513,13 +513,8 @@ function detectLang() {
   return TRANSLATIONS[nav] ? nav : 'fr';
 }
 
-// Accesseur : t('searchBtn')
-function useTranslation() {
-  const [lang, setLangState] = React.useState(detectLang);
-  const setLang = (l) => { localStorage.setItem('findit_lang', l); setLangState(l); };
-  const t = (key, ...args) => {
-    const val = TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS['fr']?.[key] ?? key;
-    return typeof val === 'function' ? val(...args) : val;
-  };
-  return { t, lang, setLang, LANGUAGES };
+// Fonctions utilitaires (sans React — utilisées depuis app.jsx)
+function getTranslation(lang, key, ...args) {
+  const val = TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS['fr']?.[key] ?? key;
+  return typeof val === 'function' ? val(...args) : val;
 }
