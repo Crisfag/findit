@@ -273,8 +273,7 @@ input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; 
   :root { --sidebar-w: 240px; }
   .hero h1 { font-size: 1.8rem; }
   .search-box { flex-wrap: wrap; }
-  .result-item { flex-wrap: wrap; }
-  .result-actions { flex-direction: row; align-items: center; width: 100%; }
+  
   .main-content { padding: 16px; }
   .result-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
@@ -583,6 +582,8 @@ body { overflow-x: hidden; max-width: 100vw; }
     align-items: center !important;
     gap: 5px !important;
     flex-shrink: 0 !important;
+    width: auto !important;
+    max-width: 70px !important;
   }
   .btn-fav { width: 28px !important; height: 28px !important; }
   .btn-fav svg { width: 12px !important; height: 12px !important; }
