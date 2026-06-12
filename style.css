@@ -181,7 +181,7 @@ input[type=range] { width: 100%; accent-color: var(--primary-light); cursor: poi
 .result-store { font-size: 0.78rem; color: var(--info); }
 .result-delivery { font-size: 0.78rem; color: var(--success); }
 .result-dist { font-size: 0.78rem; color: var(--text3); }
-.result-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; justify-content: space-between; flex-shrink: 0; }
+.result-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; justify-content: flex-start; flex-shrink: 0; min-width: 100px; max-width: 130px; }
 .btn-fav { width: 34px; height: 34px; border-radius: 99px; background: var(--dark3); border: 1px solid var(--border); color: var(--text3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition); }
 .btn-fav:hover { background: rgba(124,58,237,0.12); border-color: var(--primary); color: var(--primary-light); }
 .btn-fav.active { background: rgba(236,72,153,0.15); border-color: var(--accent2); color: var(--accent2); }
