@@ -1,0 +1,525 @@
+// ─── Find It — Système de traductions i18n ────────────────────────────────────
+// Langues : fr, en, nl, es, ru
+
+const TRANSLATIONS = {
+  fr: {
+    // Header
+    searchPlaceholder: 'Ex: veste en cuir noir, perceuse Bosch, canapé velours…',
+    searchBtn: '🔍 Rechercher',
+    scanBtn: '📷 Scan',
+    addImageBtn: '🖼️ Ajouter une image',
+
+    // Hero
+    heroBadge: '✨ Recherche mondiale en temps réel',
+    heroTitle1: 'Trouvez n\'importe quel',
+    heroTitleAccent: 'article',
+    heroTitle2: 'dans le monde entier',
+    heroSubtitle: 'Photographiez, décrivez ou parcourez — Find It scanne le marché mondial et vous trouve les meilleures offres en quelques secondes.',
+
+    // Catégories
+    catAll: 'Tout', catFashion: 'Vêtements', catTools: 'Bricolage',
+    catDeco: 'Décoration', catGames: 'Jeux', catBooks: 'Livres',
+    catGarden: 'Jardin', catPets: 'Animaux', catKids: 'Enfants',
+    catSports: 'Sport', catBeauty: 'Beauté', catElectro: 'Électronique',
+
+    // Résultats
+    resultsFound: (n, q) => `${n} résultats pour "${q}"`,
+    sortByMatch: 'Par : Ressemblance',
+    sortByPriceAsc: 'Prix croissant',
+    sortByPriceDesc: 'Prix décroissant',
+    sortByStars: 'Meilleures notes',
+    seeOffer: 'Voir l\'offre →',
+    reviews: (n) => `${n} avis`,
+    noResults: 'Aucun résultat trouvé',
+    noResultsHint: 'Essayez d\'autres mots-clés ou utilisez le scan photo',
+
+    // Loading
+    loading1: '🔍 Connexion aux sources mondiales…',
+    loading2: '🌍 Consultation de Google Shopping…',
+    loading3: '💰 Comparaison des prix en cours…',
+    loading4: '⭐ Récupération des avis clients…',
+    loading5: '📦 Tri par pertinence…',
+
+    // Filtres sidebar
+    filtersTitle: 'FILTRES DE RECHERCHE',
+    priceRange: 'PRIX',
+    priceLabel: 'Fourchette',
+    deliveryTitle: 'DÉLAI DE LIVRAISON',
+    delivery24: '24h', delivery48: '48h', delivery3_5: '3-5 jours', delivery1w: '1 semaine',
+    colorTitle: 'COULEUR',
+    sizeTitle: 'TAILLE',
+    materialTitle: 'MATIÈRE',
+    storeTypeTitle: 'TYPE DE COMMERCE',
+    onlineStore: '🛍️ Boutiques en ligne',
+    physicalStore: '🏪 Magasins physiques',
+    both: '🔀 Les deux',
+    minMatchTitle: 'RESSEMBLANCE MINIMUM',
+    minMatchLabel: 'Seuil',
+
+    // Modal connexion
+    mySpace: '👤 Mon espace Find It',
+    continueWithGoogle: 'Continuer avec Google',
+    orByEmail: 'ou par email',
+    login: 'Se connecter',
+    register: 'Créer un compte',
+    emailLabel: 'Email',
+    passwordLabel: 'Mot de passe',
+    nameLabel: 'Prénom',
+    loginBtn: 'Se connecter',
+    registerBtn: 'Créer mon compte',
+    secureMsg: '🔒 Vos données sont sécurisées avec Supabase',
+    logoutBtn: 'Se déconnecter',
+    mySearches: 'Mes recherches récentes',
+    myFavorites: 'Mes favoris',
+    noSearches: 'Aucune recherche pour l\'instant',
+    noFavorites: 'Aucun favori pour l\'instant',
+
+    // Modal scan
+    scanTitle: '📷 Scan produit',
+    scanDesc: 'Scannez n\'importe quel article — vêtement, outil, plante, meuble — avec votre appareil photo, ou ajoutez une image existante. L\'IA identifie le produit et lance la recherche automatiquement.',
+    dropzoneText: 'Glissez une image ici ou',
+    browseFiles: 'parcourez vos fichiers',
+    dropzoneFormats: 'JPG, PNG, WEBP — max 10MB',
+    analyzing: '🔍 Analyse en cours…',
+    analysisTitle: '🔬 Identification automatique par Claude Vision',
+    confidence: 'Confiance',
+    searchWith: (q) => `🔍 Rechercher "${q}"`,
+    changeImage: 'Changer l\'image',
+
+    // Bannière IA
+    iaOptimized: '🧠 Recherche optimisée par IA',
+    enrichedQuery: 'Requête enrichie :',
+    iaIdentified: (name) => `🤖 IA a identifié : "${name}"`,
+
+    // Comparateur
+    priceCompare: '💰 Comparateur de prix',
+    minPrice: 'Prix min', maxPrice: 'Prix max',
+    avgPrice: 'Moyenne', maxSavings: 'Économie max',
+    aiAdvice: '🤖 Conseil d\'achat IA',
+    seeOn: 'Voir →',
+
+    // Boutons bas de page
+    newPhotoSearch: '📸 Nouvelle recherche par Scan',
+    seeOnMap: '🗺️ Voir sur la carte',
+    comparePrices: '💰 Comparer les prix',
+
+    // Toast
+    addedFav: 'Ajouté aux favoris ❤️',
+    removedFav: 'Retiré des favoris',
+
+    // Langue
+    language: 'Langue',
+  },
+
+  en: {
+    searchPlaceholder: 'Ex: black leather jacket, Bosch drill, velvet sofa…',
+    searchBtn: '🔍 Search',
+    scanBtn: '📷 Scan',
+    addImageBtn: '🖼️ Add image',
+
+    heroBadge: '✨ Real-time global search',
+    heroTitle1: 'Find any',
+    heroTitleAccent: 'product',
+    heroTitle2: 'anywhere in the world',
+    heroSubtitle: 'Photograph, describe or browse — Find It scans the global market and finds you the best deals in seconds.',
+
+    catAll: 'All', catFashion: 'Clothing', catTools: 'Tools',
+    catDeco: 'Decoration', catGames: 'Games', catBooks: 'Books',
+    catGarden: 'Garden', catPets: 'Pets', catKids: 'Kids',
+    catSports: 'Sports', catBeauty: 'Beauty', catElectro: 'Electronics',
+
+    resultsFound: (n, q) => `${n} results for "${q}"`,
+    sortByMatch: 'By: Relevance',
+    sortByPriceAsc: 'Lowest price',
+    sortByPriceDesc: 'Highest price',
+    sortByStars: 'Best rated',
+    seeOffer: 'See offer →',
+    reviews: (n) => `${n} reviews`,
+    noResults: 'No results found',
+    noResultsHint: 'Try other keywords or use the photo scan',
+
+    loading1: '🔍 Connecting to global sources…',
+    loading2: '🌍 Checking Google Shopping…',
+    loading3: '💰 Comparing prices…',
+    loading4: '⭐ Fetching customer reviews…',
+    loading5: '📦 Sorting by relevance…',
+
+    filtersTitle: 'SEARCH FILTERS',
+    priceRange: 'PRICE',
+    priceLabel: 'Range',
+    deliveryTitle: 'DELIVERY TIME',
+    delivery24: '24h', delivery48: '48h', delivery3_5: '3-5 days', delivery1w: '1 week',
+    colorTitle: 'COLOR',
+    sizeTitle: 'SIZE',
+    materialTitle: 'MATERIAL',
+    storeTypeTitle: 'STORE TYPE',
+    onlineStore: '🛍️ Online stores',
+    physicalStore: '🏪 Physical stores',
+    both: '🔀 Both',
+    minMatchTitle: 'MINIMUM MATCH',
+    minMatchLabel: 'Threshold',
+
+    mySpace: '👤 My Find It space',
+    continueWithGoogle: 'Continue with Google',
+    orByEmail: 'or by email',
+    login: 'Sign in',
+    register: 'Create account',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    nameLabel: 'First name',
+    loginBtn: 'Sign in',
+    registerBtn: 'Create my account',
+    secureMsg: '🔒 Your data is secured with Supabase',
+    logoutBtn: 'Sign out',
+    mySearches: 'My recent searches',
+    myFavorites: 'My favorites',
+    noSearches: 'No searches yet',
+    noFavorites: 'No favorites yet',
+
+    scanTitle: '📷 Scan product',
+    scanDesc: 'Scan any item — clothing, tool, plant, furniture — with your camera, or add an existing image. AI identifies the product and launches the search automatically.',
+    dropzoneText: 'Drop an image here or',
+    browseFiles: 'browse your files',
+    dropzoneFormats: 'JPG, PNG, WEBP — max 10MB',
+    analyzing: '🔍 Analyzing…',
+    analysisTitle: '🔬 Automatic identification by Claude Vision',
+    confidence: 'Confidence',
+    searchWith: (q) => `🔍 Search "${q}"`,
+    changeImage: 'Change image',
+
+    iaOptimized: '🧠 AI optimized search',
+    enrichedQuery: 'Enhanced query:',
+    iaIdentified: (name) => `🤖 AI identified: "${name}"`,
+
+    priceCompare: '💰 Price comparator',
+    minPrice: 'Min price', maxPrice: 'Max price',
+    avgPrice: 'Average', maxSavings: 'Max savings',
+    aiAdvice: '🤖 AI buying advice',
+    seeOn: 'See →',
+
+    newPhotoSearch: '📸 New scan search',
+    seeOnMap: '🗺️ See on map',
+    comparePrices: '💰 Compare prices',
+
+    addedFav: 'Added to favorites ❤️',
+    removedFav: 'Removed from favorites',
+
+    language: 'Language',
+  },
+
+  nl: {
+    searchPlaceholder: 'Bijv: zwart leren jack, Bosch boormachine, fluwelen bank…',
+    searchBtn: '🔍 Zoeken',
+    scanBtn: '📷 Scan',
+    addImageBtn: '🖼️ Afbeelding toevoegen',
+
+    heroBadge: '✨ Wereldwijde zoekopdracht in realtime',
+    heroTitle1: 'Vind elk',
+    heroTitleAccent: 'product',
+    heroTitle2: 'overal ter wereld',
+    heroSubtitle: 'Fotografeer, beschrijf of blader — Find It scant de wereldmarkt en vindt u de beste aanbiedingen in seconden.',
+
+    catAll: 'Alles', catFashion: 'Kleding', catTools: 'Gereedschap',
+    catDeco: 'Decoratie', catGames: 'Spellen', catBooks: 'Boeken',
+    catGarden: 'Tuin', catPets: 'Huisdieren', catKids: 'Kinderen',
+    catSports: 'Sport', catBeauty: 'Schoonheid', catElectro: 'Elektronica',
+
+    resultsFound: (n, q) => `${n} resultaten voor "${q}"`,
+    sortByMatch: 'Op: Relevantie',
+    sortByPriceAsc: 'Laagste prijs',
+    sortByPriceDesc: 'Hoogste prijs',
+    sortByStars: 'Beste beoordeeld',
+    seeOffer: 'Bekijk aanbieding →',
+    reviews: (n) => `${n} beoordelingen`,
+    noResults: 'Geen resultaten gevonden',
+    noResultsHint: 'Probeer andere trefwoorden of gebruik de fotoscan',
+
+    loading1: '🔍 Verbinding met wereldwijde bronnen…',
+    loading2: '🌍 Google Shopping raadplegen…',
+    loading3: '💰 Prijzen vergelijken…',
+    loading4: '⭐ Klantbeoordelingen ophalen…',
+    loading5: '📦 Sorteren op relevantie…',
+
+    filtersTitle: 'ZOEKFILTERS',
+    priceRange: 'PRIJS',
+    priceLabel: 'Bereik',
+    deliveryTitle: 'LEVERTIJD',
+    delivery24: '24u', delivery48: '48u', delivery3_5: '3-5 dagen', delivery1w: '1 week',
+    colorTitle: 'KLEUR',
+    sizeTitle: 'MAAT',
+    materialTitle: 'MATERIAAL',
+    storeTypeTitle: 'WINKELTYPE',
+    onlineStore: '🛍️ Online winkels',
+    physicalStore: '🏪 Fysieke winkels',
+    both: '🔀 Beide',
+    minMatchTitle: 'MINIMALE OVEREENKOMST',
+    minMatchLabel: 'Drempel',
+
+    mySpace: '👤 Mijn Find It ruimte',
+    continueWithGoogle: 'Doorgaan met Google',
+    orByEmail: 'of via e-mail',
+    login: 'Inloggen',
+    register: 'Account aanmaken',
+    emailLabel: 'E-mail',
+    passwordLabel: 'Wachtwoord',
+    nameLabel: 'Voornaam',
+    loginBtn: 'Inloggen',
+    registerBtn: 'Mijn account aanmaken',
+    secureMsg: '🔒 Uw gegevens zijn beveiligd met Supabase',
+    logoutBtn: 'Uitloggen',
+    mySearches: 'Mijn recente zoekopdrachten',
+    myFavorites: 'Mijn favorieten',
+    noSearches: 'Nog geen zoekopdrachten',
+    noFavorites: 'Nog geen favorieten',
+
+    scanTitle: '📷 Product scannen',
+    scanDesc: 'Scan elk artikel — kleding, gereedschap, plant, meubel — met uw camera, of voeg een bestaande afbeelding toe. AI identificeert het product en start de zoekopdracht automatisch.',
+    dropzoneText: 'Sleep een afbeelding hierheen of',
+    browseFiles: 'blader door uw bestanden',
+    dropzoneFormats: 'JPG, PNG, WEBP — max 10MB',
+    analyzing: '🔍 Analyseren…',
+    analysisTitle: '🔬 Automatische identificatie door Claude Vision',
+    confidence: 'Betrouwbaarheid',
+    searchWith: (q) => `🔍 Zoeken "${q}"`,
+    changeImage: 'Afbeelding wijzigen',
+
+    iaOptimized: '🧠 AI-geoptimaliseerde zoekopdracht',
+    enrichedQuery: 'Verbeterde zoekopdracht:',
+    iaIdentified: (name) => `🤖 AI geïdentificeerd: "${name}"`,
+
+    priceCompare: '💰 Prijsvergelijker',
+    minPrice: 'Min prijs', maxPrice: 'Max prijs',
+    avgPrice: 'Gemiddeld', maxSavings: 'Max besparing',
+    aiAdvice: '🤖 AI koopadvies',
+    seeOn: 'Bekijken →',
+
+    newPhotoSearch: '📸 Nieuwe scanzoekopdracht',
+    seeOnMap: '🗺️ Bekijk op kaart',
+    comparePrices: '💰 Prijzen vergelijken',
+
+    addedFav: 'Toegevoegd aan favorieten ❤️',
+    removedFav: 'Verwijderd uit favorieten',
+
+    language: 'Taal',
+  },
+
+  es: {
+    searchPlaceholder: 'Ej: chaqueta de cuero negro, taladro Bosch, sofá de terciopelo…',
+    searchBtn: '🔍 Buscar',
+    scanBtn: '📷 Escanear',
+    addImageBtn: '🖼️ Añadir imagen',
+
+    heroBadge: '✨ Búsqueda mundial en tiempo real',
+    heroTitle1: 'Encuentra cualquier',
+    heroTitleAccent: 'artículo',
+    heroTitle2: 'en cualquier parte del mundo',
+    heroSubtitle: 'Fotografía, describe o navega — Find It escanea el mercado global y te encuentra las mejores ofertas en segundos.',
+
+    catAll: 'Todo', catFashion: 'Ropa', catTools: 'Herramientas',
+    catDeco: 'Decoración', catGames: 'Juegos', catBooks: 'Libros',
+    catGarden: 'Jardín', catPets: 'Mascotas', catKids: 'Niños',
+    catSports: 'Deporte', catBeauty: 'Belleza', catElectro: 'Electrónica',
+
+    resultsFound: (n, q) => `${n} resultados para "${q}"`,
+    sortByMatch: 'Por: Relevancia',
+    sortByPriceAsc: 'Precio más bajo',
+    sortByPriceDesc: 'Precio más alto',
+    sortByStars: 'Mejor valorado',
+    seeOffer: 'Ver oferta →',
+    reviews: (n) => `${n} reseñas`,
+    noResults: 'No se encontraron resultados',
+    noResultsHint: 'Pruebe otras palabras clave o use el escaneo de fotos',
+
+    loading1: '🔍 Conectando con fuentes globales…',
+    loading2: '🌍 Consultando Google Shopping…',
+    loading3: '💰 Comparando precios…',
+    loading4: '⭐ Obteniendo reseñas de clientes…',
+    loading5: '📦 Ordenando por relevancia…',
+
+    filtersTitle: 'FILTROS DE BÚSQUEDA',
+    priceRange: 'PRECIO',
+    priceLabel: 'Rango',
+    deliveryTitle: 'TIEMPO DE ENTREGA',
+    delivery24: '24h', delivery48: '48h', delivery3_5: '3-5 días', delivery1w: '1 semana',
+    colorTitle: 'COLOR',
+    sizeTitle: 'TALLA',
+    materialTitle: 'MATERIAL',
+    storeTypeTitle: 'TIPO DE TIENDA',
+    onlineStore: '🛍️ Tiendas online',
+    physicalStore: '🏪 Tiendas físicas',
+    both: '🔀 Ambas',
+    minMatchTitle: 'COINCIDENCIA MÍNIMA',
+    minMatchLabel: 'Umbral',
+
+    mySpace: '👤 Mi espacio Find It',
+    continueWithGoogle: 'Continuar con Google',
+    orByEmail: 'o por correo electrónico',
+    login: 'Iniciar sesión',
+    register: 'Crear cuenta',
+    emailLabel: 'Correo electrónico',
+    passwordLabel: 'Contraseña',
+    nameLabel: 'Nombre',
+    loginBtn: 'Iniciar sesión',
+    registerBtn: 'Crear mi cuenta',
+    secureMsg: '🔒 Sus datos están seguros con Supabase',
+    logoutBtn: 'Cerrar sesión',
+    mySearches: 'Mis búsquedas recientes',
+    myFavorites: 'Mis favoritos',
+    noSearches: 'Aún no hay búsquedas',
+    noFavorites: 'Aún no hay favoritos',
+
+    scanTitle: '📷 Escanear producto',
+    scanDesc: 'Escanee cualquier artículo — ropa, herramienta, planta, mueble — con su cámara, o añada una imagen existente. La IA identifica el producto y lanza la búsqueda automáticamente.',
+    dropzoneText: 'Arrastra una imagen aquí o',
+    browseFiles: 'explora tus archivos',
+    dropzoneFormats: 'JPG, PNG, WEBP — máx 10MB',
+    analyzing: '🔍 Analizando…',
+    analysisTitle: '🔬 Identificación automática por Claude Vision',
+    confidence: 'Confianza',
+    searchWith: (q) => `🔍 Buscar "${q}"`,
+    changeImage: 'Cambiar imagen',
+
+    iaOptimized: '🧠 Búsqueda optimizada por IA',
+    enrichedQuery: 'Consulta mejorada:',
+    iaIdentified: (name) => `🤖 IA identificó: "${name}"`,
+
+    priceCompare: '💰 Comparador de precios',
+    minPrice: 'Precio mín', maxPrice: 'Precio máx',
+    avgPrice: 'Promedio', maxSavings: 'Ahorro máx',
+    aiAdvice: '🤖 Consejo de compra IA',
+    seeOn: 'Ver →',
+
+    newPhotoSearch: '📸 Nueva búsqueda por escaneo',
+    seeOnMap: '🗺️ Ver en el mapa',
+    comparePrices: '💰 Comparar precios',
+
+    addedFav: 'Añadido a favoritos ❤️',
+    removedFav: 'Eliminado de favoritos',
+
+    language: 'Idioma',
+  },
+
+  ru: {
+    searchPlaceholder: 'Напр: чёрная кожаная куртка, дрель Bosch, бархатный диван…',
+    searchBtn: '🔍 Найти',
+    scanBtn: '📷 Скан',
+    addImageBtn: '🖼️ Добавить фото',
+
+    heroBadge: '✨ Глобальный поиск в реальном времени',
+    heroTitle1: 'Найдите любой',
+    heroTitleAccent: 'товар',
+    heroTitle2: 'в любой точке мира',
+    heroSubtitle: 'Сфотографируйте, опишите или просматривайте — Find It сканирует мировой рынок и находит лучшие предложения за секунды.',
+
+    catAll: 'Всё', catFashion: 'Одежда', catTools: 'Инструменты',
+    catDeco: 'Декор', catGames: 'Игры', catBooks: 'Книги',
+    catGarden: 'Сад', catPets: 'Питомцы', catKids: 'Дети',
+    catSports: 'Спорт', catBeauty: 'Красота', catElectro: 'Электроника',
+
+    resultsFound: (n, q) => `${n} результатов для "${q}"`,
+    sortByMatch: 'По: Релевантности',
+    sortByPriceAsc: 'Дешевле',
+    sortByPriceDesc: 'Дороже',
+    sortByStars: 'Лучшие оценки',
+    seeOffer: 'Смотреть →',
+    reviews: (n) => `${n} отзывов`,
+    noResults: 'Результаты не найдены',
+    noResultsHint: 'Попробуйте другие ключевые слова или используйте фотосканирование',
+
+    loading1: '🔍 Подключение к мировым источникам…',
+    loading2: '🌍 Запрос Google Shopping…',
+    loading3: '💰 Сравнение цен…',
+    loading4: '⭐ Получение отзывов…',
+    loading5: '📦 Сортировка по релевантности…',
+
+    filtersTitle: 'ФИЛЬТРЫ ПОИСКА',
+    priceRange: 'ЦЕНА',
+    priceLabel: 'Диапазон',
+    deliveryTitle: 'СРОК ДОСТАВКИ',
+    delivery24: '24ч', delivery48: '48ч', delivery3_5: '3-5 дней', delivery1w: '1 неделя',
+    colorTitle: 'ЦВЕТ',
+    sizeTitle: 'РАЗМЕР',
+    materialTitle: 'МАТЕРИАЛ',
+    storeTypeTitle: 'ТИП МАГАЗИНА',
+    onlineStore: '🛍️ Интернет-магазины',
+    physicalStore: '🏪 Физические магазины',
+    both: '🔀 Оба',
+    minMatchTitle: 'МИН. СОВПАДЕНИЕ',
+    minMatchLabel: 'Порог',
+
+    mySpace: '👤 Мой профиль Find It',
+    continueWithGoogle: 'Войти через Google',
+    orByEmail: 'или по e-mail',
+    login: 'Войти',
+    register: 'Создать аккаунт',
+    emailLabel: 'E-mail',
+    passwordLabel: 'Пароль',
+    nameLabel: 'Имя',
+    loginBtn: 'Войти',
+    registerBtn: 'Создать аккаунт',
+    secureMsg: '🔒 Ваши данные защищены Supabase',
+    logoutBtn: 'Выйти',
+    mySearches: 'Мои последние поиски',
+    myFavorites: 'Мои избранные',
+    noSearches: 'Поисков пока нет',
+    noFavorites: 'Избранных пока нет',
+
+    scanTitle: '📷 Сканирование товара',
+    scanDesc: 'Сфотографируйте любой предмет — одежду, инструмент, растение, мебель — или добавьте готовое изображение. ИИ определит товар и запустит поиск автоматически.',
+    dropzoneText: 'Перетащите изображение сюда или',
+    browseFiles: 'выберите файл',
+    dropzoneFormats: 'JPG, PNG, WEBP — макс 10MB',
+    analyzing: '🔍 Анализирую…',
+    analysisTitle: '🔬 Автоматическое определение Claude Vision',
+    confidence: 'Уверенность',
+    searchWith: (q) => `🔍 Искать "${q}"`,
+    changeImage: 'Изменить изображение',
+
+    iaOptimized: '🧠 Поиск оптимизирован ИИ',
+    enrichedQuery: 'Улучшенный запрос:',
+    iaIdentified: (name) => `🤖 ИИ определил: "${name}"`,
+
+    priceCompare: '💰 Сравнение цен',
+    minPrice: 'Мин цена', maxPrice: 'Макс цена',
+    avgPrice: 'Среднее', maxSavings: 'Макс экономия',
+    aiAdvice: '🤖 Советы ИИ по покупке',
+    seeOn: 'Смотреть →',
+
+    newPhotoSearch: '📸 Новый поиск по фото',
+    seeOnMap: '🗺️ Показать на карте',
+    comparePrices: '💰 Сравнить цены',
+
+    addedFav: 'Добавлено в избранное ❤️',
+    removedFav: 'Удалено из избранного',
+
+    language: 'Язык',
+  }
+};
+
+// Drapeaux et libellés pour le sélecteur
+const LANGUAGES = [
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'en', label: 'English',  flag: '🇬🇧' },
+  { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+  { code: 'es', label: 'Español',  flag: '🇪🇸' },
+  { code: 'ru', label: 'Русский',  flag: '🇷🇺' },
+];
+
+// Détection automatique de la langue du navigateur
+function detectLang() {
+  const saved = localStorage.getItem('findit_lang');
+  if (saved && TRANSLATIONS[saved]) return saved;
+  const nav = (navigator.language || 'fr').split('-')[0].toLowerCase();
+  return TRANSLATIONS[nav] ? nav : 'fr';
+}
+
+// Accesseur : t('searchBtn')
+function useTranslation() {
+  const [lang, setLangState] = React.useState(detectLang);
+  const setLang = (l) => { localStorage.setItem('findit_lang', l); setLangState(l); };
+  const t = (key, ...args) => {
+    const val = TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS['fr']?.[key] ?? key;
+    return typeof val === 'function' ? val(...args) : val;
+  };
+  return { t, lang, setLang, LANGUAGES };
+}
