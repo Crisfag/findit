@@ -258,7 +258,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, 'Type de commerce'),
       React.createElement('div', { className:'check-group' },
-        [['online','🛒 Boutiques en ligne'],['physical','🏪 Magasins physiques'],['both','🔄 Les deux']].map(([v,l]) =>
+        [['online','🛒 Boutiques en ligne'],['physical',t('physicalStore')],['both','🔄 Les deux']].map(([v,l]) =>
           React.createElement('label', { key:v, className:'check-item' },
             React.createElement('input', { type:'checkbox', checked:filters.storeType.includes(v),
               onChange:()=>toggle('storeType',v) }), l
@@ -388,7 +388,7 @@ function MapPreview({ results }) {
               borderRadius:6, fontSize:'0.75rem', textAlign:'center', textDecoration:'none',
               fontWeight:600
             }
-          }, "Voir l'offre →")
+          }, t('seeOffer'))
       ),
 
       React.createElement('div', {
@@ -534,7 +534,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
             className:'btn-visit',
             style:{display:'inline-block',textDecoration:'none',textAlign:'center'},
             onClick:e=>e.stopPropagation()
-          }, "Voir l'offre →")
+          }, t('seeOffer'))
         : React.createElement('span', {
             className:'btn-visit',
             style:{opacity:0.4,cursor:'not-allowed'}
@@ -629,7 +629,7 @@ function UploadModal({ onClose, onSearchWithAnalysis, mode }) {
   return React.createElement('div', { className:'modal-overlay', onClick:onClose },
     React.createElement('div', { className:'modal', style:{maxWidth:520}, onClick:e=>e.stopPropagation() },
       React.createElement('div', { className:'modal-header' },
-        React.createElement('div', { className:'modal-title' }, '📷 Scan produit'),
+        React.createElement('div', { className:'modal-title' }, t('scanTitle')),
         React.createElement('button', { className:'modal-close', onClick:onClose },
           React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
         )
@@ -802,7 +802,7 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
     return React.createElement('div', { className:'modal-overlay', onClick:onClose },
       React.createElement('div', { className:'modal', onClick:e=>e.stopPropagation() },
         React.createElement('div', { className:'modal-header' },
-          React.createElement('div', { className:'modal-title' }, '👤 Mon espace Find It'),
+          React.createElement('div', { className:'modal-title' }, t('mySpace')),
           React.createElement('button', { className:'modal-close', onClick:onClose },
             React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
           )
@@ -825,14 +825,14 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
                 React.createElement('path', { fill:'#FBBC05', d:'M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z' }),
                 React.createElement('path', { fill:'#EA4335', d:'M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z' })
               ),
-              'Continuer avec Google'
+              t('continueWithGoogle')
             )
           ),
 
           // Séparateur
           React.createElement('div', { style:{display:'flex',alignItems:'center',gap:10,marginBottom:16} },
             React.createElement('div', { style:{flex:1,height:1,background:'var(--border)'} }),
-            React.createElement('span', { style:{fontSize:'0.75rem',color:'var(--text3)'} }, 'ou par email'),
+            React.createElement('span', { style:{fontSize:'0.75rem',color:'var(--text3)'} }, t('orByEmail')),
             React.createElement('div', { style:{flex:1,height:1,background:'var(--border)'} })
           ),
 
@@ -847,7 +847,7 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
                 color: mode===m ? 'white' : 'var(--text2)',
                 fontFamily:'var(--font-head)', fontWeight:700, fontSize:'0.85rem', cursor:'pointer'
               }
-            }, m==='login' ? 'Se connecter' : 'Créer un compte'))
+            }, m==='login' ? t('login') : t('register')))
           ),
 
           error && React.createElement('div', { style:{
@@ -868,12 +868,12 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
               value:form.name, onChange:e=>setForm(f=>({...f,name:e.target.value})) })
           ),
           React.createElement('div', null,
-            React.createElement('div', { className:'input-label' }, 'Email'),
+            React.createElement('div', { className:'input-label' }, t('emailLabel')),
             React.createElement('input', { className:'input-field', type:'email', placeholder:'jean@email.com',
               value:form.email, onChange:e=>setForm(f=>({...f,email:e.target.value})) })
           ),
           React.createElement('div', null,
-            React.createElement('div', { className:'input-label' }, 'Mot de passe'),
+            React.createElement('div', { className:'input-label' }, t('passwordLabel')),
             React.createElement('input', { className:'input-field', type:'password', placeholder:'••••••••',
               value:form.pass, onChange:e=>setForm(f=>({...f,pass:e.target.value})),
               onKeyDown:e=>e.key==='Enter'&&handleAuth()
@@ -884,10 +884,10 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
             onClick:handleAuth,
             disabled:auth.loading,
             style:{opacity:auth.loading?0.7:1}
-          }, auth.loading ? '⏳ Connexion…' : mode==='login' ? 'Se connecter' : 'Créer mon compte'),
+          }, auth.loading ? '⏳ Connexion…' : mode==='login' ? t('login') : 'Créer mon compte'),
 
           React.createElement('div', { style:{textAlign:'center',marginTop:12,fontSize:'0.75rem',color:'var(--text3)'} },
-            '🔒 Vos données sont sécurisées avec Supabase'
+            t('secureMsg')
           )
         )
       )
@@ -920,7 +920,7 @@ function ProfileModal({ onClose, auth, onSearchFromHistory }) {
             color:'var(--text3)', fontSize:'0.78rem', padding:'4px 12px',
             borderRadius:'99px', cursor:'pointer'
           }
-        }, 'Se déconnecter')
+        }, t('logoutBtn'))
       ),
 
       // Tabs
@@ -1029,7 +1029,7 @@ function PriceCompareModal({ query, onClose }) {
   return React.createElement('div', { className:'modal-overlay', onClick:onClose },
     React.createElement('div', { className:'modal', style:{maxWidth:620}, onClick:e=>e.stopPropagation() },
       React.createElement('div', { className:'modal-header' },
-        React.createElement('div', { className:'modal-title' }, '💰 Comparateur de prix'),
+        React.createElement('div', { className:'modal-title' }, t('priceCompare')),
         React.createElement('button', { className:'modal-close', onClick:onClose },
           React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
         )
@@ -1046,10 +1046,10 @@ function PriceCompareModal({ query, onClose }) {
             display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:16
           }},
             [
-              ['Prix min', `${data.stats.minPrice} €`, 'var(--success)'],
-              ['Prix max', `${data.stats.maxPrice} €`, 'var(--primary)'],
-              ['Moyenne', `${data.stats.avgPrice} €`, 'var(--info)'],
-              ['Économie max', `${data.stats.savings} € (-${data.stats.savingsPct}%)`, 'var(--warning)'],
+              [t('minPrice'), `${data.stats.minPrice} €`, 'var(--success)'],
+              [t('maxPrice'), `${data.stats.maxPrice} €`, 'var(--primary)'],
+              [t('avgPrice'), `${data.stats.avgPrice} €`, 'var(--info)'],
+              [t('maxSavings'), `${data.stats.savings} € (-${data.stats.savingsPct}%)`, 'var(--warning)'],
             ].map(([label, val, color]) =>
               React.createElement('div', { key:label, style:{
                 background:'var(--dark3)', border:'1px solid var(--border)',
@@ -1245,9 +1245,58 @@ function MobileFilterDrawer({ filters, setFilters, onClose }) {
   );
 }
 
+
+// ─── SÉLECTEUR DE LANGUE ────────────────────────────────────────────────────
+function LangSelector({ lang, setLang, LANGUAGES }) {
+  const [open, setOpen] = useState(false);
+  const current = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+
+  return React.createElement('div', { style:{position:'relative'} },
+    React.createElement('button', {
+      onClick: () => setOpen(v => !v),
+      style:{
+        background:'var(--dark3)', border:'1px solid var(--border)',
+        borderRadius:'var(--radius)', padding:'5px 10px',
+        cursor:'pointer', display:'flex', alignItems:'center', gap:5,
+        color:'var(--text)', fontSize:'0.82rem', fontFamily:'var(--font-body)',
+      },
+      title: 'Langue / Language'
+    },
+      current.flag, ' ', current.code.toUpperCase(),
+      React.createElement('span', { style:{fontSize:'0.65rem',opacity:0.6} }, '▾')
+    ),
+    open && React.createElement('div', {
+      style:{
+        position:'absolute', top:'calc(100% + 6px)', right:0,
+        background:'var(--dark2)', border:'1px solid var(--border2)',
+        borderRadius:'var(--radius)', minWidth:150, zIndex:999,
+        boxShadow:'0 8px 24px rgba(0,0,0,0.4)', overflow:'hidden'
+      }
+    },
+      LANGUAGES.map(l => React.createElement('button', {
+        key: l.code,
+        onClick: () => { setLang(l.code); setOpen(false); },
+        style:{
+          display:'flex', alignItems:'center', gap:8, width:'100%',
+          padding:'8px 14px', background: l.code === lang ? 'var(--dark3)' : 'transparent',
+          border:'none', color: l.code === lang ? 'var(--primary)' : 'var(--text)',
+          cursor:'pointer', fontSize:'0.85rem', fontFamily:'var(--font-body)',
+          textAlign:'left', fontWeight: l.code === lang ? 600 : 400,
+          transition:'background 0.15s'
+        },
+        onMouseEnter: e => { if(l.code !== lang) e.currentTarget.style.background='var(--dark3)'; },
+        onMouseLeave: e => { if(l.code !== lang) e.currentTarget.style.background='transparent'; }
+      },
+        l.flag, ' ', l.label
+      ))
+    )
+  );
+}
+
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 function App() {
   const auth = useAuth();
+  const { t, lang, setLang, LANGUAGES } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
@@ -1287,11 +1336,7 @@ function App() {
     setLoading(true); setSearchDone(false); setError(null); setResults([]);
 
     const msgs = [
-      '🔍 Connexion aux sources mondiales…',
-      '🌍 Consultation de Google Shopping…',
-      '💰 Comparaison des prix en cours…',
-      '⭐ Récupération des avis clients…',
-      '📦 Tri par pertinence…'
+      t('loading1'), t('loading2'), t('loading3'), t('loading4'), t('loading5')
     ];
     let msgIdx = 0;
     setLoadingMsg(msgs[0]);
@@ -1324,7 +1369,7 @@ function App() {
       setResults(allResults);
       setSearchDone(true);
       setLoading(false);
-      addToast(`✅ ${allResults.length} résultats trouvés pour "${searchQuery}"`);
+      addToast(`✅ ${t('resultsFound', allResults.length, searchQuery)}`);
 
       // Sauvegarde la recherche si connecté
       if (auth.isLoggedIn) {
@@ -1355,7 +1400,7 @@ function App() {
 
   function toggleFav(id) {
     setFavs(f => f.includes(id) ? f.filter(x=>x!==id) : [...f, id]);
-    addToast(favs.includes(id) ? 'Retiré des favoris' : 'Ajouté aux favoris ❤️');
+    addToast(favs.includes(id) ? t('removedFav') : t('addedFav'));
   }
 
   const filteredResults = results.filter(r => {
@@ -1393,6 +1438,7 @@ function App() {
         React.createElement('button', { className:'btn-icon', title:'Favoris' },
           React.createElement(SvgIcon, { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
         ),
+        React.createElement(LangSelector, { lang, setLang, LANGUAGES }),
         React.createElement('button', {
           className:'avatar-btn', onClick:()=>setShowProfile(true),
           title: auth.isLoggedIn ? 'Mon compte' : 'Connexion',
@@ -1417,33 +1463,33 @@ function App() {
 
         // Hero
         !searchDone && !loading && React.createElement('div', { className:'hero' },
-          React.createElement('div', { className:'hero-badge' }, '✨ Recherche mondiale en temps réel'),
+          React.createElement('div', { className:'hero-badge' }, t('heroBadge')),
           React.createElement('h1', null, 'Trouvez n\'importe quel ',
             React.createElement('span', null, 'article'), ' dans le monde entier'
           ),
-          React.createElement('p', null, 'Photographiez, décrivez ou parcourez — Find It scanne le marché mondial et vous trouve les meilleures offres en quelques secondes.'),
+          React.createElement('p', null, t('heroSubtitle')),
 
           React.createElement('div', { className:'search-box' },
             // Ligne 1 — champ de recherche (large) + bouton Rechercher
             React.createElement('div', { className:'search-row-1' },
               React.createElement('div', { className:'search-input-wrap' },
                 React.createElement('input', {
-                  placeholder:'Ex: veste en cuir noir, perceuse Bosch, canapé velours…',
+                  placeholder:t('searchPlaceholder'),
                   value:query, onChange:e=>setQuery(e.target.value),
                   onKeyDown:e=>e.key==='Enter'&&handleSearch()
                 })
               ),
-              React.createElement('button', { className:'btn-search', onClick:()=>handleSearch() }, '🔍 Rechercher')
+              React.createElement('button', { className:'btn-search', onClick:()=>handleSearch() }, t('searchBtn'))
             ),
             // Ligne 2 — Scan (caméra) + Ajouter une image (fichier)
             React.createElement('div', { className:'search-row-2' },
               React.createElement('button', { className:'btn-camera btn-scan', onClick:()=>setShowUpload('camera') },
                 React.createElement(SvgIcon, { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z M12 17a4 4 0 100-8 4 4 0 000 8z' }),
-                '📷 Scan'
+                t('scanBtn')
               ),
               React.createElement('button', { className:'btn-camera btn-add-image', onClick:()=>setShowUpload('file') },
                 React.createElement(SvgIcon, { d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' }),
-                '🖼️ Ajouter une image'
+                t('addImageBtn')
               )
             )
           ),
@@ -1593,7 +1639,7 @@ function App() {
 
           React.createElement('div', { style:{marginTop:20,textAlign:'center',display:'flex',gap:12,justifyContent:'center',flexWrap:'wrap'} },
             React.createElement('button', { className:'btn-camera', onClick:()=>setShowUpload('camera') },
-              '📸 Nouvelle recherche par Scan'
+              t('newPhotoSearch')
             ),
             React.createElement('button', { className:'btn-camera', onClick:()=>setShowMap(v=>!v) },
               '🗺 ', showMap?'Masquer la carte':'Voir sur la carte'
@@ -1602,7 +1648,7 @@ function App() {
               className:'btn-camera',
               style:{background:'rgba(46,204,113,0.1)',borderColor:'rgba(46,204,113,0.3)',color:'var(--success)'},
               onClick:()=>{ setCompareQuery(query); setShowCompare(true); }
-            }, '💰 Comparer les prix')
+            }, t('comparePrices'))
           )
         )
       )
