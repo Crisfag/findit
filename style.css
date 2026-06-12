@@ -93,9 +93,9 @@ input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; 
 /* ─── HERO / SEARCH ─── */
 .hero { text-align: center; padding: 48px 24px 36px; max-width: 700px; margin: 0 auto; }
 .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,75,43,0.12); border: 1px solid rgba(255,75,43,0.3); color: var(--primary); font-size: 0.78rem; padding: 4px 12px; border-radius: 99px; margin-bottom: 20px; font-weight: 500; }
-.hero h1 { font-family: var(--font-head); font-weight: 800; font-size: 2.8rem; line-height: 1.1; margin-bottom: 12px; }
+.hero h1 { font-family: var(--font-head); font-weight: 800; font-size: 2.8rem; line-height: 1.1; margin-bottom: 24px; }
 .hero h1 span { background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.hero p { color: var(--text2); font-size: 1rem; line-height: 1.6; margin-bottom: 32px; }
+.hero p { color: var(--text2); font-size: 1rem; line-height: 1.6; margin-bottom: 48px; }
 
 /* ─── SEARCH BOX ─── */
 .search-box { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-xl); padding: 16px; display: flex; flex-direction: column; gap: 12px; max-width: 760px; width: 100%; margin: 0 auto 24px; }
@@ -432,8 +432,8 @@ body { overflow-x: hidden; max-width: 100vw; }
   /* ── Hero ── */
   .hero { padding: 14px 0; }
   .hero-badge { font-size: 0.7rem; padding: 3px 8px; margin-bottom: 10px; }
-  .hero h1 { font-size: 1.5rem; line-height: 1.15; margin-bottom: 6px; }
-  .hero p { font-size: 0.8rem; margin-bottom: 14px; }
+  .hero h1 { font-size: 1.5rem; line-height: 1.15; margin-bottom: 14px; }
+  .hero p { font-size: 0.8rem; margin-bottom: 24px; }
 
   /* ── Search box ── */
   .search-box { padding: 8px; gap: 6px; }
