@@ -58,7 +58,7 @@ export default async function handler(req, res) {
     // ── Google Shopping
     const fetchGoogleShopping = async () => {
       try {
-        const sp = new URLSearchParams({ engine:'google_shopping', q:enhancedQuery, api_key:serpKey, gl:country, hl:lang, num:'20' });
+        const sp = new URLSearchParams({ engine:'google_shopping', q:enhancedQuery, api_key:serpKey, gl:country, hl:lang, num:'30' });
         const r = await fetch(`https://serpapi.com/search.json?${sp}`);
         const d = await r.json();
         if (d.error) { console.log('GoogleShopping error:', d.error); return []; }
@@ -89,7 +89,7 @@ export default async function handler(req, res) {
         const r = await fetch(`https://serpapi.com/search.json?${sp}`);
         const d = await r.json();
         if (d.error) { console.log('Amazon error:', d.error); return []; }
-        return (d.organic_results || []).slice(0,10).map(item => {
+        return (d.organic_results || []).slice(0,15).map(item => {
           const priceVal = item.extracted_price ?? item.price?.extracted_value ?? item.price?.value ?? null;
           const priceStr = item.price?.raw || (priceVal != null ? `${priceVal} €` : null);
           return {
@@ -119,7 +119,7 @@ export default async function handler(req, res) {
         const r = await fetch(`https://serpapi.com/search.json?${sp}`);
         const d = await r.json();
         if (d.error) { console.log('eBay error:', d.error); return []; }
-        return (d.organic_results || []).slice(0,10).map(item => {
+        return (d.organic_results || []).slice(0,15).map(item => {
           const priceVal = item.price?.extracted ?? item.price?.from?.extracted ?? null;
           const priceStr = item.price?.raw || item.price?.from?.raw || null;
           return {
@@ -142,10 +142,31 @@ export default async function handler(req, res) {
       } catch(e) { console.log('eBay fetch error:', e.message); return []; }
     };
 
-    const [googleResults, amazonResults, ebayResults] = await Promise.all([
+    // ── Shein via Google Shopping (requête dédiée)
+    const fetchShein = async () => {
+      try {
+        const sp = new URLSearchParams({ engine:'google_shopping', q: enhancedQuery + ' site:shein.com OR shein', api_key:serpKey, gl:country, hl:lang, num:'10' });
+        const r = await fetch(`https://serpapi.com/search.json?${sp}`);
+        const d = await r.json();
+        return (d.shopping_results || [])
+          .filter(item => item.source && item.source.toLowerCase().includes('shein'))
+          .slice(0,8)
+          .map(item => ({
+            title: item.title, price: item.price, extracted_price: item.extracted_price,
+            old_price: item.old_price, thumbnail: item.thumbnail,
+            source: 'Shein', link: item.link, product_link: item.product_link,
+            rating: item.rating, reviews: item.reviews, delivery: item.delivery,
+            snippet: item.snippet || '', extensions: item.extensions || [],
+            product_id: item.product_id, badge: item.badge,
+          }));
+      } catch(e) { return []; }
+    };
+
+    const [googleResults, amazonResults, ebayResults, sheinResults] = await Promise.all([
       fetchGoogleShopping(),
       fetchAmazon(),
       fetchEbay(),
+      fetchShein(),
     ]);
 
     if (googleResults.length === 0 && amazonResults.length === 0 && ebayResults.length === 0) {
@@ -159,13 +180,14 @@ export default async function handler(req, res) {
       if (googleResults[i]) rawResults.push(googleResults[i]);
       if (amazonResults[i]) rawResults.push(amazonResults[i]);
       if (ebayResults[i]) rawResults.push(ebayResults[i]);
+      if (sheinResults[i]) rawResults.push(sheinResults[i]);
     }
 
     // ÉTAPE 3 — Scoring Claude
     let scoredResults = rawResults;
     if (anthropicKey && rawResults.length > 0) {
       try {
-        const productList = rawResults.slice(0,21).map((item,i) => ({ index:i, title:item.title||'', snippet:item.snippet||'', extensions:(item.extensions||[]).join(', ') }));
+        const productList = rawResults.slice(0,30).map((item,i) => ({ index:i, title:item.title||'', snippet:item.snippet||'', extensions:(item.extensions||[]).join(', ') }));
         const isImgSearch = isImageSearch;
           const scoreInstruction = isImgSearch
             ? `RECHERCHE PAR IMAGE. Les critères visuels suivants ont été détectés par Claude Vision et sont TRÈS PRÉCIS. Score chaque produit (0-99) en vérifiant STRICTEMENT la correspondance visuelle.
