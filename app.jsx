@@ -461,11 +461,14 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
 
     React.createElement('div', { className:'result-body', onClick:()=>onExpand(item.id), style:{cursor:'pointer'} },
       React.createElement('div', { className:'result-meta' },
-        React.createElement('div', { className:'result-title' }, item.title),
-        React.createElement('div', { style:{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0} },
-          React.createElement('div', { className:getMatchClass(matchScore) }, `${matchScore}%`),
+        React.createElement('div', { style:{flex:1,minWidth:0} },
+          React.createElement('div', { style:{display:'flex',alignItems:'flex-start',gap:5,marginBottom:2} },
+            React.createElement('div', { className:'result-title', style:{flex:1,minWidth:0} }, item.title),
+            React.createElement('div', { className:getMatchClass(matchScore), style:{flexShrink:0} }, `${matchScore}%`)
+          ),
           item.matchReason && React.createElement('div', {
-            style:{fontSize:'0.65rem',color:'var(--text3)',maxWidth:120,textAlign:'right',lineHeight:1.3}
+            style:{fontSize:'0.65rem',color:'var(--text3)',lineHeight:1.3,marginBottom:2,
+                   display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}
           }, item.matchReason)
         )
       ),
