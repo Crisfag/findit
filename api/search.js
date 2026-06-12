@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { q, category, min_price, max_price, country = 'be', lang = 'fr' } = req.query || {};
+  const { q, category, min_price, max_price, country = 'be', lang = 'fr', visual_criteria } = req.query || {};
   if (!q) return res.status(400).json({ error: 'Paramètre q requis' });
 
   const serpKey = process.env.SERPAPI_KEY;
@@ -12,11 +12,22 @@ export default async function handler(req, res) {
   if (!serpKey) return res.status(500).json({ error: 'Clé SerpApi manquante' });
 
   try {
-    // ÉTAPE 1 — Claude enrichit la requête
+    // ÉTAPE 1 — Enrichissement de la requête
     let enhancedQuery = q;
     let visualCriteria = [];
+    const isImageSearch = visual_criteria && visual_criteria.length > 2;
 
-    if (anthropicKey) {
+    if (isImageSearch) {
+      // ── Recherche par image : les critères visuels viennent de Claude Vision, plus précis
+      // On n'appelle PAS Haiku pour re-générer des critères (ils seraient moins bons)
+      try {
+        visualCriteria = JSON.parse(visual_criteria);
+      } catch(e) { visualCriteria = []; }
+      // Enrichit juste la requête texte si besoin
+      enhancedQuery = q;
+      console.log('[Image Search] Critères visuels Vision:', visualCriteria.length, 'critères');
+    } else if (anthropicKey) {
+      // ── Recherche texte classique : Haiku génère les critères visuels
       try {
         const enhRes = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -155,12 +166,24 @@ export default async function handler(req, res) {
     if (anthropicKey && rawResults.length > 0) {
       try {
         const productList = rawResults.slice(0,21).map((item,i) => ({ index:i, title:item.title||'', snippet:item.snippet||'', extensions:(item.extensions||[]).join(', ') }));
-        const scoreRes = await fetch('https://api.anthropic.com/v1/messages', {
+        const isImgSearch = isImageSearch;
+          const scoreInstruction = isImgSearch
+            ? `RECHERCHE PAR IMAGE. Les critères visuels suivants ont été détectés par Claude Vision et sont TRÈS PRÉCIS. Score chaque produit (0-99) en vérifiant STRICTEMENT la correspondance visuelle.
+RÈGLES STRICTES :
+- Si la couleur détectée ne correspond pas → score max 40
+- Si la matière/texture ne correspond pas → score max 50
+- Si la forme/silhouette ne correspond pas → score max 45
+- Si plusieurs critères majeurs manquent → score max 30
+- Score 85+ uniquement si couleur + matière + forme correspondent tous
+Critères visuels exacts de l'image : ${visualCriteria.join(' | ')}`
+            : `Recherche: "${q}". Critères: ${visualCriteria.join(', ')}. Score chaque produit (0-99). RÈGLE: si critère majeur absent → max 45%.`;
+
+          const scoreRes = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
           body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001', max_tokens: 1024,
-            messages: [{ role: 'user', content: `Recherche: "${q}". Critères: ${visualCriteria.join(', ')}. Score chaque produit (0-99). RÈGLE: si critère majeur absent → max 45%. Réponds JSON: {"scores":[{"index":0,"score":85,"reason":"..."}]}\n${productList.map(p=>`[${p.index}] "${p.title}" | ${p.snippet}`).join('\n')}` }]
+            messages: [{ role: 'user', content: `${scoreInstruction}\nRéponds JSON: {"scores":[{"index":0,"score":85,"reason":"..."}]}\n${productList.map(p=>`[${p.index}] "${p.title}" | ${p.snippet}`).join('\n')}` }]
           })
         });
         const sd = await scoreRes.json();
