@@ -544,7 +544,7 @@ function ResultItem({ item, view, favs, toggleFav, onExpand, expanded }) {
 }
 
 // ─── UPLOAD MODAL avec IA Vision ─────────────────────────────────────────────
-function UploadModal({ onClose, onSearchWithAnalysis }) {
+function UploadModal({ onClose, onSearchWithAnalysis, mode }) {
   const [preview, setPreview] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
   const [mediaType, setMediaType] = useState('image/jpeg');
@@ -553,6 +553,16 @@ function UploadModal({ onClose, onSearchWithAnalysis }) {
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
   const inputRef = useRef();
+  const cameraInputRef = useRef();
+
+  // Ouvre automatiquement le bon sélecteur selon le mode choisi (Scan caméra ou Ajouter une image)
+  useEffect(() => {
+    if (mode === 'camera' && cameraInputRef.current) {
+      cameraInputRef.current.click();
+    } else if (mode === 'file' && inputRef.current) {
+      inputRef.current.click();
+    }
+  }, [mode]);
 
   function handleFile(file) {
     if (!file) return;
@@ -613,7 +623,7 @@ function UploadModal({ onClose, onSearchWithAnalysis }) {
   return React.createElement('div', { className:'modal-overlay', onClick:onClose },
     React.createElement('div', { className:'modal', style:{maxWidth:520}, onClick:e=>e.stopPropagation() },
       React.createElement('div', { className:'modal-header' },
-        React.createElement('div', { className:'modal-title' }, '📸 Recherche par image IA'),
+        React.createElement('div', { className:'modal-title' }, '📷 Scan produit'),
         React.createElement('button', { className:'modal-close', onClick:onClose },
           React.createElement(SvgIcon, { d:'M18 6L6 18M6 6l12 12' })
         )
@@ -627,7 +637,7 @@ function UploadModal({ onClose, onSearchWithAnalysis }) {
             React.createElement('div', { className:'ai-banner-head' },
               React.createElement('div', { className:'ai-banner-title' }, '🤖 Identification automatique par Claude Vision')
             ),
-            React.createElement('p', null, 'Photographiez n\'importe quel article — vêtement, outil, plante, meuble — et l\'IA identifie le produit et lance la recherche automatiquement.')
+            React.createElement('p', null, 'Scannez n\'importe quel article — vêtement, outil, plante, meuble — avec votre appareil photo, ou ajoutez une image existante. L\'IA identifie le produit et lance la recherche automatiquement.')
           ),
           React.createElement('div', {
             className:`upload-zone${dragging?' drag':''}`,
@@ -645,6 +655,8 @@ function UploadModal({ onClose, onSearchWithAnalysis }) {
             )
           ),
           React.createElement('input', { ref:inputRef, type:'file', accept:'image/*',
+            style:{display:'none'}, onChange:e=>handleFile(e.target.files[0]) }),
+          React.createElement('input', { ref:cameraInputRef, type:'file', accept:'image/*', capture:'environment',
             style:{display:'none'}, onChange:e=>handleFile(e.target.files[0]) })
         ),
 
@@ -1193,7 +1205,7 @@ function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
           React.createElement('path', { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z' }),
           React.createElement('circle', { cx:'12', cy:'13', r:'4' })
         ),
-        React.createElement('span', null, 'Photo IA')
+        React.createElement('span', null, 'Scan')
       ),
       // Recherche texte (bouton central)
       React.createElement('div', {
@@ -1416,19 +1428,28 @@ function App() {
           React.createElement('p', null, 'Photographiez, décrivez ou parcourez — Find It scanne le marché mondial et vous trouve les meilleures offres en quelques secondes.'),
 
           React.createElement('div', { className:'search-box' },
-            React.createElement('div', { className:'search-input-wrap' },
-              React.createElement('input', {
-                placeholder:'Ex: veste en cuir noir, perceuse Bosch, canapé velours…',
-                value:query, onChange:e=>setQuery(e.target.value),
-                onKeyDown:e=>e.key==='Enter'&&handleSearch()
-              })
+            // Ligne 1 — champ de recherche (large) + bouton Rechercher
+            React.createElement('div', { className:'search-row-1' },
+              React.createElement('div', { className:'search-input-wrap' },
+                React.createElement('input', {
+                  placeholder:'Ex: veste en cuir noir, perceuse Bosch, canapé velours…',
+                  value:query, onChange:e=>setQuery(e.target.value),
+                  onKeyDown:e=>e.key==='Enter'&&handleSearch()
+                })
+              ),
+              React.createElement('button', { className:'btn-search', onClick:()=>handleSearch() }, '🔍 Rechercher')
             ),
-            React.createElement('div', { className:'search-divider' }),
-            React.createElement('button', { className:'btn-camera', onClick:()=>setShowUpload(true) },
-              React.createElement(SvgIcon, { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z M12 17a4 4 0 100-8 4 4 0 000 8z' }),
-              '📸 Photo IA'
-            ),
-            React.createElement('button', { className:'btn-search', onClick:()=>handleSearch() }, '🔍 Rechercher')
+            // Ligne 2 — Scan (caméra) + Ajouter une image (fichier)
+            React.createElement('div', { className:'search-row-2' },
+              React.createElement('button', { className:'btn-camera btn-scan', onClick:()=>setShowUpload('camera') },
+                React.createElement(SvgIcon, { d:'M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z M12 17a4 4 0 100-8 4 4 0 000 8z' }),
+                '📷 Scan'
+              ),
+              React.createElement('button', { className:'btn-camera btn-add-image', onClick:()=>setShowUpload('file') },
+                React.createElement(SvgIcon, { d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' }),
+                '🖼️ Ajouter une image'
+              )
+            )
           ),
 
           React.createElement('div', { className:'categories' },
@@ -1546,8 +1567,8 @@ function App() {
                 ),
 
           React.createElement('div', { style:{marginTop:20,textAlign:'center',display:'flex',gap:12,justifyContent:'center',flexWrap:'wrap'} },
-            React.createElement('button', { className:'btn-camera', onClick:()=>setShowUpload(true) },
-              '📸 Nouvelle recherche par photo'
+            React.createElement('button', { className:'btn-camera', onClick:()=>setShowUpload('camera') },
+              '📸 Nouvelle recherche par Scan'
             ),
             React.createElement('button', { className:'btn-camera', onClick:()=>setShowMap(v=>!v) },
               '🗺 ', showMap?'Masquer la carte':'Voir sur la carte'
@@ -1564,7 +1585,7 @@ function App() {
 
     // ── MOBILE NAV
     React.createElement(MobileNav, {
-      onUpload:()=>setShowUpload(true),
+      onUpload:()=>setShowUpload('camera'),
       onProfile:()=>setShowProfile(true),
       searchDone
     }),
@@ -1588,6 +1609,7 @@ function App() {
     }),
     React.createElement(PWAInstallBanner, null),
     showUpload && React.createElement(UploadModal, {
+      mode: showUpload,
       onClose:()=>setShowUpload(false),
       onSearchWithAnalysis:handleImageSearch
     }),
