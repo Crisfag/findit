@@ -1,17 +1,17 @@
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { id:'all',     label:'Tout',         icon:'🔍' },
-  { id:'fashion', label:'Vêtements',    icon:'👗' },
-  { id:'tools',   label:'Bricolage',    icon:'🔧' },
-  { id:'deco',    label:'Décoration',   icon:'🏠' },
-  { id:'games',   label:'Jeux',         icon:'🎮' },
-  { id:'books',   label:'Livres',       icon:'📚' },
-  { id:'garden',  label:'Jardin',       icon:'🌿' },
-  { id:'pets',    label:'Animaux',      icon:'🐾' },
-  { id:'kids',    label:'Enfants',      icon:'🧸' },
-  { id:'sports',  label:'Sport',        icon:'⚽' },
-  { id:'beauty',  label:'Beauté',       icon:'💄' },
-  { id:'electro', label:'Électronique', icon:'📱' },
+  { id:'all',     tKey:'catAll',     icon:'🔍' },
+  { id:'fashion', tKey:'catFashion', icon:'👗' },
+  { id:'tools',   tKey:'catTools',   icon:'🔧' },
+  { id:'deco',    tKey:'catDeco',    icon:'🏠' },
+  { id:'games',   tKey:'catGames',   icon:'🎮' },
+  { id:'books',   tKey:'catBooks',   icon:'📚' },
+  { id:'garden',  tKey:'catGarden',  icon:'🌿' },
+  { id:'pets',    tKey:'catPets',    icon:'🐾' },
+  { id:'kids',    tKey:'catKids',    icon:'🧸' },
+  { id:'sports',  tKey:'catSports',  icon:'⚽' },
+  { id:'beauty',  tKey:'catBeauty',  icon:'💄' },
+  { id:'electro', tKey:'catElectro', icon:'📱' },
 ];
 
 const CAT_LABELS = {
@@ -28,8 +28,27 @@ const COLORS = [
   {id:'orange',hex:'#ff5722'},
 ];
 const SIZES = ['XS','S','M','L','XL','XXL','Unique'];
-const MATERIALS = ['Coton','Cuir','Lin','Bois','Métal','Plastique','Verre','Céramique'];
-const DELIVERY_OPTS = ['24h','48h','3-5 jours','1 semaine'];
+function getMaterials(t) {
+  return [
+    { key:'cotton',   label: t('matCotton')   || 'Coton' },
+    { key:'leather',  label: t('matLeather')  || 'Cuir' },
+    { key:'linen',    label: t('matLinen')    || 'Lin' },
+    { key:'wood',     label: t('matWood')     || 'Bois' },
+    { key:'metal',    label: t('matMetal')    || 'Métal' },
+    { key:'plastic',  label: t('matPlastic')  || 'Plastique' },
+    { key:'glass',    label: t('matGlass')    || 'Verre' },
+    { key:'ceramic',  label: t('matCeramic')  || 'Céramique' },
+  ];
+}
+// Les options de livraison utilisent les clés i18n
+function getDeliveryOpts(t) {
+  return [
+    { key: '24h',     label: t('delivery24') },
+    { key: '48h',     label: t('delivery48') },
+    { key: '3-5',     label: t('delivery3_5') },
+    { key: '1week',   label: t('delivery1w') },
+  ];
+}
 
 const HISTORY_ITEMS = [
   {id:1,query:'Veste en cuir noir',date:"Aujourd'hui",emoji:'👗'},
@@ -232,10 +251,10 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, t('deliveryTitle')),
       React.createElement('div', { className:'chip-group' },
-        DELIVERY_OPTS.map(d => React.createElement('div', {
-          key:d, className:`chip${filters.delivery.includes(d)?' active':''}`,
-          onClick:()=>toggle('delivery',d)
-        }, d))
+        getDeliveryOpts(t).map(d => React.createElement('div', {
+          key:d.key, className:`chip${filters.delivery.includes(d.key)?' active':''}`,
+          onClick:()=>toggle('delivery',d.key)
+        }, d.label))
       )
     ),
 
@@ -262,10 +281,10 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     React.createElement('div', { className:'filter-section' },
       React.createElement('div', { className:'filter-title' }, t('materialTitle')),
       React.createElement('div', { className:'chip-group' },
-        MATERIALS.map(m => React.createElement('div', {
-          key:m, className:`chip${filters.materials.includes(m)?' active':''}`,
-          onClick:()=>toggle('materials',m)
-        }, m))
+        getMaterials(t).map(m => React.createElement('div', {
+          key:m.key, className:`chip${filters.materials.includes(m.key)?' active':''}`,
+          onClick:()=>toggle('materials',m.key)
+        }, m.label))
       )
     ),
 
@@ -1654,8 +1673,10 @@ function App() {
         // Hero
         !searchDone && !loading && React.createElement('div', { className:'hero' },
           React.createElement('div', { className:'hero-badge' }, t('heroBadge')),
-          React.createElement('h1', null, 'Trouvez n\'importe quel ',
-            React.createElement('span', null, 'article'), ' dans le monde entier'
+          React.createElement('h1', null,
+            t('heroTitle1') + ' ',
+            React.createElement('span', { style:{color:'var(--primary)'} }, t('heroTitleAccent')),
+            ' ' + t('heroTitle2')
           ),
           React.createElement('p', null, t('heroSubtitle')),
 
@@ -1688,7 +1709,7 @@ function App() {
             CATEGORIES.map(c => React.createElement('div', {
               key:c.id, className:`cat-chip${activeCategory===c.id?' active':''}`,
               onClick:()=>setActiveCategory(c.id)
-            }, c.icon, ' ', c.label))
+            }, c.icon, ' ', t(c.tKey)))
           )
         ),
 
@@ -1781,7 +1802,7 @@ function App() {
             CATEGORIES.map(c => React.createElement('div', {
               key:c.id, className:`cat-chip${activeCategory===c.id?' active':''}`,
               onClick:()=>{ setActiveCategory(c.id); handleSearch(query, c.id); }
-            }, c.icon, ' ', c.label))
+            }, c.icon, ' ', t(c.tKey)))
           ),
 
           React.createElement('div', { className:'results-header' },
