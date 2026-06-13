@@ -212,11 +212,11 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     }));
   }
   return React.createElement('aside', { className:`sidebar${collapsed?' collapsed':''}` },
-    React.createElement('div', { className:'nav-header' }, 'Filtres de recherche'),
+    React.createElement('div', { className:'nav-header' }, t('filtersTitle')),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Prix'),
-      React.createElement('div', { className:'filter-label' }, 'Fourchette ',
+      React.createElement('div', { className:'filter-title' }, t('priceTitle')),
+      React.createElement('div', { className:'filter-label' }, t('priceLabel') + ' ',
         React.createElement('span', null, `${filters.priceMin}€ — ${filters.priceMax}€`)
       ),
       React.createElement('input', { type:'range', min:0, max:2000, value:filters.priceMax,
@@ -230,7 +230,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Délai de livraison'),
+      React.createElement('div', { className:'filter-title' }, t('deliveryTitle')),
       React.createElement('div', { className:'chip-group' },
         DELIVERY_OPTS.map(d => React.createElement('div', {
           key:d, className:`chip${filters.delivery.includes(d)?' active':''}`,
@@ -240,7 +240,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Couleur'),
+      React.createElement('div', { className:'filter-title' }, t('colorTitle')),
       React.createElement('div', { className:'color-chips' },
         COLORS.map(c => React.createElement('div', {
           key:c.id, className:`color-chip${filters.colors.includes(c.id)?' active':''}`,
@@ -250,7 +250,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Taille'),
+      React.createElement('div', { className:'filter-title' }, t('sizeTitle')),
       React.createElement('div', { className:'chip-group' },
         SIZES.map(s => React.createElement('div', {
           key:s, className:`chip${filters.sizes.includes(s)?' active':''}`,
@@ -260,7 +260,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Matière'),
+      React.createElement('div', { className:'filter-title' }, t('materialTitle')),
       React.createElement('div', { className:'chip-group' },
         MATERIALS.map(m => React.createElement('div', {
           key:m, className:`chip${filters.materials.includes(m)?' active':''}`,
@@ -270,9 +270,9 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Type de commerce'),
+      React.createElement('div', { className:'filter-title' }, t('storeTypeTitle')),
       React.createElement('div', { className:'check-group' },
-        [['online','🛒 Boutiques en ligne'],['physical',t('physicalStore')],['both','🔄 Les deux']].map(([v,l]) =>
+        [['online',t('onlineStore')],['physical',t('physicalStore')],['both',t('both')]].map(([v,l]) =>
           React.createElement('label', { key:v, className:'check-item' },
             React.createElement('input', { type:'checkbox', checked:filters.storeType.includes(v),
               onChange:()=>toggle('storeType',v) }), l
@@ -282,8 +282,8 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Ressemblance minimum'),
-      React.createElement('div', { className:'filter-label' }, 'Seuil ',
+      React.createElement('div', { className:'filter-title' }, t('minMatchTitle')),
+      React.createElement('div', { className:'filter-label' }, t('minMatchLabel') + ' ',
         React.createElement('span', null, `${filters.minMatch}%`)
       ),
       React.createElement('input', { type:'range', min:50, max:100, value:filters.minMatch,
@@ -291,7 +291,7 @@ function FilterSidebar({ collapsed, filters, setFilters }) {
     ),
 
     React.createElement('div', { className:'filter-section' },
-      React.createElement('div', { className:'filter-title' }, 'Note minimale'),
+      React.createElement('div', { className:'filter-title' }, t('minRatingTitle')),
       React.createElement('div', { className:'rating-filter' },
         [1,2,3,4,5].map(n => React.createElement('button', {
           key:n, className:`star-btn${filters.minRating>=n?' active':''}`,
@@ -1372,7 +1372,7 @@ function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
         React.createElement('svg', { viewBox:'0 0 24 24' },
           React.createElement('path', { d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' })
         ),
-        React.createElement('span', null, 'Accueil')
+        React.createElement('span', null, t('navHome'))
       ),
       // Recherche photo
       React.createElement('div', { className:'mobile-nav-item', onClick:onUpload },
@@ -1392,14 +1392,14 @@ function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
           React.createElement('circle', { cx:'11', cy:'11', r:'8' }),
           React.createElement('path', { d:'m21 21-4.35-4.35' })
         ),
-        React.createElement('span', { style:{fontSize:'0.7rem',fontWeight:700} }, 'Chercher')
+        React.createElement('span', { style:{fontSize:'0.7rem',fontWeight:700} }, t('navSearch'))
       ),
       // Favoris
       React.createElement('div', { className:'mobile-nav-item' },
         React.createElement('svg', { viewBox:'0 0 24 24' },
           React.createElement('path', { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
         ),
-        React.createElement('span', null, 'Favoris')
+        React.createElement('span', null, t('navFavs'))
       ),
       // Profil
       React.createElement('div', { className:'mobile-nav-item', onClick:onProfile },
@@ -1407,7 +1407,7 @@ function MobileNav({ onSearch, onProfile, onUpload, searchDone }) {
           React.createElement('path', { d:'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2' }),
           React.createElement('circle', { cx:'12', cy:'7', r:'4' })
         ),
-        React.createElement('span', null, 'Profil')
+        React.createElement('span', null, t('navProfile'))
       )
     )
   );
@@ -1421,7 +1421,7 @@ function MobileFilterDrawer({ filters, setFilters, onClose }) {
     React.createElement('div', { className:'filter-drawer open' },
       React.createElement('div', { className:'filter-drawer-handle' }),
       React.createElement('div', { className:'filter-drawer-header' },
-        React.createElement('div', { className:'filter-drawer-title' }, '🎛 Filtres de recherche'),
+        React.createElement('div', { className:'filter-drawer-title' }, t('filtersDrawerTitle')),
         React.createElement('button', { className:'filter-drawer-close', onClick:onClose }, '✕')
       ),
       React.createElement(FilterSidebar, { collapsed:false, filters, setFilters })
@@ -1625,7 +1625,7 @@ function App() {
         React.createElement('button', { className:'btn-icon', title:'Carte', onClick:()=>setShowMap(v=>!v) },
           React.createElement(SvgIcon, { d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' })
         ),
-        React.createElement('button', { className:'btn-icon', title:'Favoris' },
+        React.createElement('button', { className:'btn-icon', title:t('navFavs') },
           React.createElement(SvgIcon, { d:'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z' })
         ),
         React.createElement(LangSelector, { lang, setLang, LANGUAGES }),
@@ -1736,10 +1736,10 @@ function App() {
         searchDone && results.length > 0 && results[0].enhancedQuery && results[0].enhancedQuery !== query &&
           React.createElement('div', { className:'ai-banner fade-in', style:{marginBottom:16, background:'rgba(52,152,219,0.08)', borderColor:'rgba(52,152,219,0.2)'} },
             React.createElement('div', { className:'ai-banner-head' },
-              React.createElement('div', { className:'ai-banner-title', style:{color:'var(--info)'} }, '🔬 Recherche optimisée par IA')
+              React.createElement('div', { className:'ai-banner-title', style:{color:'var(--info)'} }, t('aiOptimizedLabel'))
             ),
             React.createElement('p', null,
-              React.createElement('span', { style:{color:'var(--text3)'} }, 'Requête enrichie : '),
+              React.createElement('span', { style:{color:'var(--text3)'} }, t('enrichedQuery') + ' '),
               React.createElement('span', { style:{color:'var(--text)',fontStyle:'italic'} }, `"${results[0].enhancedQuery}"`)
             ),
             results[0].visualCriteria && results[0].visualCriteria.length > 0 &&
@@ -1754,7 +1754,7 @@ function App() {
           ),
 
         showMap && React.createElement('div', { style:{marginBottom:16} },
-          React.createElement('div', { className:'section-title' }, '🗺 Disponibilité mondiale'),
+          React.createElement('div', { className:'section-title' }, t('disponibilityTitle')),
           React.createElement(MapPreview, { results: filteredResults })
         ),
 
@@ -1762,18 +1762,18 @@ function App() {
           React.createElement('div', { className:'spinner' }),
           React.createElement('p', null, loadingMsg),
           React.createElement('p', { style:{fontSize:'0.78rem',color:'var(--text3)'} },
-            'Consultation de Google Shopping en temps réel'
+            t('loadingSubtitle')
           )
         ),
 
         error && React.createElement('div', { className:'empty-state' },
           React.createElement('div', { className:'empty-icon' }, '⚠️'),
-          React.createElement('h3', null, 'Erreur de recherche'),
+          React.createElement('h3', null, t('errorTitle')),
           React.createElement('p', null, error),
           React.createElement('button', { className:'btn-primary',
             style:{marginTop:16,maxWidth:200,margin:'16px auto'},
             onClick:()=>handleSearch()
-          }, 'Réessayer')
+          }, t('retryBtn'))
         ),
 
         searchDone && React.createElement('div', { className:'fade-in' },
@@ -1791,10 +1791,10 @@ function App() {
             ),
             React.createElement('div', { style:{display:'flex',gap:12,alignItems:'center'} },
               React.createElement('select', { className:'sort-select', value:sort, onChange:e=>setSort(e.target.value) },
-                React.createElement('option', {value:'match'}, 'Par : Ressemblance'),
-                React.createElement('option', {value:'price_asc'}, 'Par : Prix ↑'),
-                React.createElement('option', {value:'price_desc'}, 'Par : Prix ↓'),
-                React.createElement('option', {value:'stars'}, 'Par : Note')
+                React.createElement('option', {value:'match'}, t('sortByMatch')),
+                React.createElement('option', {value:'price_asc'}, t('sortByPriceAsc')),
+                React.createElement('option', {value:'price_desc'}, t('sortByPriceDesc')),
+                React.createElement('option', {value:'stars'}, t('sortByStars'))
               ),
               React.createElement('div', { className:'view-btns' },
                 React.createElement('button', { className:`view-btn${view==='list'?' active':''}`, onClick:()=>setView('list') },
@@ -1810,8 +1810,8 @@ function App() {
           filteredResults.length === 0
             ? React.createElement('div', { className:'empty-state' },
                 React.createElement('div', { className:'empty-icon' }, '🔍'),
-                React.createElement('h3', null, 'Aucun résultat pour ces filtres'),
-                React.createElement('p', null, "Essayez d'élargir vos critères.")
+                React.createElement('h3', null, t('noResultsFilter')),
+                React.createElement('p', null, t('noResultsHint'))
               )
             : view === 'list'
               ? React.createElement('div', { className:'result-list' },
@@ -1848,7 +1848,7 @@ function App() {
               t('newPhotoSearch')
             ),
             React.createElement('button', { className:'btn-camera', onClick:()=>setShowMap(v=>!v) },
-              '🗺 ', showMap?'Masquer la carte':'Voir sur la carte'
+              '🗺 ', showMap ? t('hideMap') : t('seeOnMap')
             ),
             React.createElement('button', {
               className:'btn-camera',
